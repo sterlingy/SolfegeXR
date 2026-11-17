@@ -26,5 +26,15 @@ Godot_v4.7.2-stable_win64.exe --path . -- --demo
 
 Using the PC's LAN IP instead of `adb reverse` won't work: the page isn't secure there, so Chrome blocks the mic.
 
+## Without the editor (export + serve)
+```
+Godot_v4.7.2-stable_win64_console.exe --headless --path . --export-debug "Web" build/web/index.html
+python -m http.server 8060 --bind 127.0.0.1 --directory build/web
+```
+`.claude/launch.json` has the same server as `web-build`, for Claude's browser pane. `build/` is git-ignored.
+
+## Testing without a singer
+Add `?testtone=220` to the URL, for example `http://localhost:8060/?testtone=220`, then press **Start**. Instead of the mic, a filtered sawtooth tone with vibrato steps through do-re-mi-fa-sol, and some notes are sharp on purpose. It exercises the real AudioWorklet → JavaScriptBridge → trace path, and needs no mic permission.
+
 ## Reading the debug line
 `Hz` and `conf` show the latest estimate. `level` is input loudness: below 0.004 counts as silence. `est/s` should be about 185. `age` is how old the newest estimate is when Godot draws it. If `age` stays under about 20 ms, the trace feels instant.

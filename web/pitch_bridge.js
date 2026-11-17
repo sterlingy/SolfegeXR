@@ -38,18 +38,22 @@
   };
 
   S._start = async function (workletSource) {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      throw new Error("Microphone needs a secure page (https or localhost).");
+    // Dev aid: ?testtone=220 feeds a gliding synthetic tone instead of the mic.
+    const testHz = parseFloat(new URLSearchParams(location.search).get("testtone") || "0");
+    if (!testHz) {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Microphone needs a secure page (https or localhost).");
+      }
+      S.stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+          channelCount: 1,
+        },
+        video: false,
+      });
     }
-    S.stream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: false,
-        noiseSuppression: false,
-        autoGainControl: false,
-        channelCount: 1,
-      },
-      video: false,
-    });
 
     const AC = window.AudioContext || window.webkitAudioContext;
     S.ctx = new AC({ latencyHint: "interactive" });
@@ -62,7 +66,7 @@
       URL.revokeObjectURL(url);
     }
 
-    const src = S.ctx.createMediaStreamSource(S.stream);
+    const src = testHz ? S._testTone(testHz) : S.ctx.createMediaStreamSource(S.stream);
     S.node = new AudioWorkletNode(S.ctx, "solfege-pitch", {
       numberOfInputs: 1,
       numberOfOutputs: 1,
@@ -87,6 +91,33 @@
     mute.connect(S.ctx.destination);
 
     S.state = "running";
+  };
+
+  // Sawtooth through a lowpass, gliding up and down a few semitones, with vibrato.
+  S._testTone = function (hz) {
+    const ctx = S.ctx;
+    const osc = ctx.createOscillator();
+    osc.type = "sawtooth";
+    osc.frequency.value = hz;
+    const t0 = ctx.currentTime;
+    for (let i = 0; i < 120; i++) {
+      const semis = [0, 2, 4, 5, 7, 5, 4, 2][i % 8] + (i % 3 === 1 ? 0.3 : 0); // some notes sharp
+      osc.frequency.setTargetAtTime(hz * Math.pow(2, semis / 12), t0 + i * 0.8, 0.03);
+    }
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 5.5;
+    const depth = ctx.createGain();
+    depth.gain.value = hz * 0.012;
+    lfo.connect(depth).connect(osc.frequency);
+    const lp = ctx.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.value = 2500;
+    const amp = ctx.createGain();
+    amp.gain.value = 0.2;
+    osc.connect(lp).connect(amp);
+    osc.start();
+    lfo.start();
+    return amp;
   };
 
   S.stop = function (keepError) {
