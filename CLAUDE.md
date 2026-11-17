@@ -52,6 +52,8 @@ Guardrails: phone-first portrait touch UI everywhere; early throwaway native And
 - `scripts/ui/`: `PitchTrace` (custom-drawn lanes + trace) and `main.gd`.
 - How to run, test on Android, and read the debug line: [docs/RUNNING.md](docs/RUNNING.md). Dev args: `-- --demo`, `-- --screenshot=out.png`.
 - Commit `*.uid` files. Godot 4.4+ uses them to keep resource references stable.
+- Tests: `Godot_..._console.exe --headless --path . -s res://tests/run_tests.gd` (see docs/RUNNING.md). Run them before every commit.
+- `thirdparty/` is git-ignored; fetch with `tools/fetch_godot_cpp.sh`.
 
 ## Open questions
 App name · lyric versions for songs 1–10 · ensemble stage details · which ChordMasterXR code seeds the shared addon · mastery thresholds.

@@ -38,3 +38,9 @@ Add `?testtone=220` to the URL, for example `http://localhost:8060/?testtone=220
 
 ## Reading the debug line
 `Hz` and `conf` show the latest estimate. `level` is input loudness: below 0.004 counts as silence. `est/s` should be about 185. `age` is how old the newest estimate is when Godot draws it. If `age` stays under about 20 ms, the trace feels instant.
+
+## Tests
+```
+Godot_v4.7.2-stable_win64_console.exe --headless --path . -s res://tests/run_tests.gd
+```
+Add `-- name` to run only tests whose `file:method` contains `name`. Tests live in `tests/test_*.gd` and extend `TestCase`. The exit code is the number of failures.
