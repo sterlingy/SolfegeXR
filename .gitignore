@@ -42,3 +42,9 @@ mono_crash.*.json
 
 # Third-party downloads (see tools/fetch_*.sh)
 thirdparty/
+
+# GDExtension build output
+bin/
+*.exp
+*.pdb
+*.ilk

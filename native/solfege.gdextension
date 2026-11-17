@@ -1,0 +1,14 @@
+[configuration]
+
+entry_symbol = "solfege_library_init"
+compatibility_minimum = "4.5"
+reloadable = true
+
+[libraries]
+
+windows.debug.x86_64 = "res://bin/libsolfege.windows.template_debug.x86_64.dll"
+windows.release.x86_64 = "res://bin/libsolfege.windows.template_release.x86_64.dll"
+linux.debug.x86_64 = "res://bin/libsolfege.linux.template_debug.x86_64.so"
+linux.release.x86_64 = "res://bin/libsolfege.linux.template_release.x86_64.so"
+android.debug.arm64 = "res://bin/libsolfege.android.template_debug.arm64.so"
+android.release.arm64 = "res://bin/libsolfege.android.template_release.arm64.so"

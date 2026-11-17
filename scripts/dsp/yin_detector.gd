@@ -16,8 +16,17 @@ const THRESHOLD := 0.15
 ## Analyze mono samples. Returns one PitchFrame per hop; frame.time is the end of
 ## the analyzed span in seconds, matching what the live worklet reports.
 static func analyze(samples: PackedFloat32Array, sample_rate: float, hop := HOP) -> Array[PitchFrame]:
-	if ClassDB.class_exists("YinNative"):
+	if has_native():
 		return _analyze_native(samples, sample_rate, hop)
+	return analyze_gdscript(samples, sample_rate, hop)
+
+
+static func has_native() -> bool:
+	return ClassDB.class_exists("YinNative")
+
+
+## The pure-GDScript path (reference implementation, and the fallback).
+static func analyze_gdscript(samples: PackedFloat32Array, sample_rate: float, hop := HOP) -> Array[PitchFrame]:
 	var decim := maxi(1, roundi(sample_rate / TARGET_RATE))
 	var rate := sample_rate / decim
 	var x := PackedFloat32Array()

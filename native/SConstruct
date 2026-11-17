@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+# Builds the SolfegeApp GDExtension (pitch detector).
+#   cd native && python -m SCons target=template_debug
+# Output goes to ../bin/. godot-cpp comes from tools/fetch_godot_cpp.sh.
+import os
+
+env = SConscript("../thirdparty/godot-cpp/SConstruct")
+env.Append(CPPPATH=["src/"])
+sources = Glob("src/*.cpp")
+
+lib = "../bin/libsolfege{}{}".format(env["suffix"], env["SHLIBSUFFIX"])
+library = env.SharedLibrary(lib, source=sources)
+Default(library)
