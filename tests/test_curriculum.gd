@@ -168,3 +168,11 @@ func test_tolerance_tightens_with_mastery() -> void:
 	for s in Curriculum.active_skills(p):
 		p.progress(s).mastered = true
 	assert_near(p.scoring_settings().tolerance_cents, 25.0, 0.01)
+
+
+func test_mic_choice_persists() -> void:
+	var p := LearnerProfile.new()
+	p.mic_device_id = "abc123"
+	assert_eq(p.save(PATH), OK)
+	assert_eq(LearnerProfile.load_or_new(PATH).mic_device_id, "abc123")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(PATH))

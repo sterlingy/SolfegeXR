@@ -25,6 +25,11 @@ func setup(_args: Dictionary) -> void:
 	UI.toggle(syl, "Chromatic syllables (fi, te…)", p.chromatic_enabled,
 		func(on): _apply(func(): p.chromatic_enabled = on))
 
+	var mic := UI.card(col)
+	UI.label(mic, "Microphone", 44)
+	UI.muted(mic, "If the app can't hear you, try another input here.", 30)
+	mic.add_child(MicPicker.new())
+
 	var gear := UI.card(col)
 	UI.toggle(gear, "I have headphones", p.has_headphones, func(on): _apply(func(): p.has_headphones = on))
 	UI.muted(gear, "Needed for backing tracks and singing with other voices.", 30)

@@ -8,6 +8,7 @@ const WORKLET_PATH := "res://web/pitch_worklet.js"
 
 var _js: JavaScriptObject
 var _last_js_state := ""
+var device_id := ""   ## "" = the browser's choice
 
 
 func _ready() -> void:
@@ -22,7 +23,7 @@ func start() -> void:
 	if _js == null:
 		_set_state(State.ERROR, "Pitch bridge not loaded")
 		return
-	_js.start(FileAccess.get_file_as_string(WORKLET_PATH))
+	_js.start(FileAccess.get_file_as_string(WORKLET_PATH), device_id)
 
 
 func stop() -> void:
@@ -50,6 +51,29 @@ func poll() -> Array[PitchFrame]:
 
 func describe() -> String:
 	return str(_js.info()) if _js else ""
+
+
+func devices() -> Array:
+	if _js == null:
+		return []
+	var parsed: Variant = JSON.parse_string(str(_js.devicesJson))
+	return parsed if parsed is Array else []
+
+
+func current_device() -> String:
+	return str(_js.currentDeviceId) if _js else ""
+
+
+func select_device(id: String) -> void:
+	device_id = id
+	if _js and str(_js.state) in ["running", "starting"]:
+		_js.stop()
+		_last_js_state = ""
+		start()
+
+
+func input_silent() -> bool:
+	return _js != null and bool(_js.isSilent())
 
 
 func _sync_state() -> void:

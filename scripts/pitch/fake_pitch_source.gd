@@ -40,6 +40,14 @@ func now() -> float:
 	return _t
 
 
+func devices() -> Array:
+	return [{id = "demo", label = "Demo singer"}]
+
+
+func current_device() -> String:
+	return "demo"
+
+
 ## Sing these targets (relative seconds) starting at source time `origin`.
 func follow(targets: Array, origin: float) -> void:
 	_mode = "follow"

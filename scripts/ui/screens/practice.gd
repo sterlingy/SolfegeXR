@@ -50,6 +50,9 @@ func _build() -> void:
 	_prompt = UI.muted(_col, "")
 	_status = UI.label(_col, "", 44, UI.WARM)
 	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var picker := MicPicker.new()
+	picker.only_when_silent = true
+	_col.add_child(picker)
 
 	_trace = PitchTrace.new()
 	_trace.size_flags_vertical = Control.SIZE_EXPAND_FILL

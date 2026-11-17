@@ -36,6 +36,12 @@ python -m http.server 8060 --bind 127.0.0.1 --directory build/web
 ## Testing without a singer
 Add `?testtone=220` to the URL, for example `http://localhost:8060/?testtone=220`, then press **Start**. Instead of the mic, a filtered sawtooth tone with vibrato steps through do-re-mi-fa-sol, and some notes are sharp on purpose. It exercises the real AudioWorklet → JavaScriptBridge → trace path, and needs no mic permission.
 
+## If the app can't hear you
+- **Settings → Microphone** lists every input. The range test, practice and Free sing screens show the same picker, with a warning, whenever the input is exact digital silence. That usually means the wrong device: a loop-back channel on an audio interface, or a VR headset's virtual mic. The choice is remembered.
+- Chrome keeps its own default mic, separate from Windows: `chrome://settings/content/microphone`.
+- Add `?diag=1` to the URL on localhost, and the page reports mic status (device, level, last pitch) to the dev server every 2 s. It shows up in the server's request log.
+- Without headphones, nothing plays while you sing: the drone stops at the count-in, and sing-along references play first instead, so the mic doesn't hear the speakers. Turn on "I have headphones" in Settings to get the drone and guide voice while singing.
+
 ## Reading the debug line
 `Hz` and `conf` show the latest estimate. `level` is input loudness: below 0.004 counts as silence. `est/s` should be about 185. `age` is how old the newest estimate is when Godot draws it. If `age` stays under about 20 ms, the trace feels instant.
 

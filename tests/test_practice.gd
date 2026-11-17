@@ -106,3 +106,56 @@ func test_range_test_rejects_too_narrow() -> void:
 		rt.add_low(PitchFrame.new(i, MusicKey.midi_to_hz(55), 0.95, 0.1))
 		rt.add_high(PitchFrame.new(i, MusicKey.midi_to_hz(58), 0.95, 0.1))
 	assert_eq(rt.result(), Vector2i(-1, -1))
+
+
+func test_no_headphones_means_silence_while_singing() -> void:
+	var profile := LearnerProfile.new()
+	profile.has_headphones = false
+	var ex := Curriculum.exercises_for(Skills.Id.STEPS, 0)[0]
+	ex.reference = Exercise.Reference.ALONG
+	var engine := SynthEngine.new(48000.0)
+	var s := PracticeSession.new(ex, profile, 1.0)
+	s.play_cadence = false
+	var saw_listen := [false]
+	var sing_audio := [0.0]
+	s.phase_changed.connect(func(p): if p == PracticeSession.Phase.LISTEN: saw_listen[0] = true)
+	s.start(engine)
+	var fake := FakePitchSource.new()
+	fake.start()
+	var t := 0.0
+	while s.phase != PracticeSession.Phase.RESULT and t < 30.0:
+		var block := engine.render(800)
+		if s.phase == PracticeSession.Phase.SING:
+			for v in block:
+				sing_audio[0] = maxf(sing_audio[0], absf(v))
+		fake.advance(800 / 48000.0)
+		s.update(fake.poll(), fake.now())
+		t += 800 / 48000.0
+	assert_true(saw_listen[0], "sing-along reference plays first instead")
+	assert_true(sing_audio[0] < 0.01, "speakers quiet while singing: peak %s" % sing_audio[0])
+	fake.free()
+
+
+func test_headphones_keep_drone_and_guide() -> void:
+	var profile := LearnerProfile.new()
+	profile.has_headphones = true
+	var ex := Curriculum.exercises_for(Skills.Id.STEPS, 0)[0]
+	ex.reference = Exercise.Reference.ALONG
+	var engine := SynthEngine.new(48000.0)
+	var s := PracticeSession.new(ex, profile, 1.0)
+	s.play_cadence = false
+	var peak := 0.0
+	s.start(engine)
+	var fake := FakePitchSource.new()
+	fake.start()
+	var t := 0.0
+	while s.phase != PracticeSession.Phase.RESULT and t < 30.0:
+		var block := engine.render(800)
+		if s.phase == PracticeSession.Phase.SING:
+			for v in block:
+				peak = maxf(peak, absf(v))
+		fake.advance(800 / 48000.0)
+		s.update(fake.poll(), fake.now())
+		t += 800 / 48000.0
+	assert_true(peak > 0.05, "guide + drone audible with headphones: %s" % peak)
+	fake.free()

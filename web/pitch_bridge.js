@@ -3,18 +3,30 @@
 // Godot evaluates this file once (JavaScriptBridge.eval) and then talks to
 // window.solfegePitch through JavaScriptBridge.get_interface().
 //
-//   start(workletSource)  -> begins mic capture (async; watch .state)
+//   start(workletSource, deviceId)  -> begins mic capture (async; watch .state).
+//                                      deviceId "" = the browser's choice.
 //   stop()
-//   drain()               -> JSON string: [[t, hz, conf, rms], ...] since last drain
-//   state                 -> "idle" | "starting" | "running" | "error"
-//   error                 -> message when state == "error"
-//   info()                -> JSON string with sample rate / latency details
+//   drain()            -> JSON string: [[t, hz, conf, rms], ...] since last drain
+//   state              -> "idle" | "starting" | "running" | "error"
+//   error              -> message when state == "error"
+//   isSilent()         -> true when the input has been exact digital silence
+//                         for over 1.5 s (wrong device, e.g. a loop-back or a
+//                         VR headset's virtual mic); not just a quiet room
+//   devicesJson        -> JSON [{id, label}] of audio inputs (labels appear
+//                         once mic permission is granted)
+//   currentDeviceId    -> the device actually in use
+//   info()             -> JSON with sample rate / latency / settings details
 //
 // Mic cleanup (echo cancellation, noise suppression, auto gain) is turned OFF:
 // those filters smear pitch and pump the level, which hurts detection.
+//
+// Dev aids (URL parameters): ?testtone=220 replaces the mic with a synthetic
+// tone; ?diag=1 reports mic status to the local dev server every 2 s.
 
 (function () {
   if (window.solfegePitch) return;
+
+  const SILENCE_MS = 1500;
 
   const S = {
     state: "idle",
@@ -24,35 +36,50 @@
     stream: null,
     node: null,
     workletInfo: null,
+    devicesJson: "[]",
+    currentDeviceId: "",
+    _zeroSince: 0,
+    _diag: { frames: 0, maxRms: 0, last: null },
   };
 
-  S.start = function (workletSource) {
+  S.start = function (workletSource, deviceId) {
     if (S.state === "running" || S.state === "starting") return;
     S.state = "starting";
     S.error = "";
-    S._start(workletSource).catch(function (e) {
+    S._start(workletSource, deviceId || "").catch(function (e) {
       S.state = "error";
       S.error = (e && (e.name + ": " + e.message)) || String(e);
       S.stop(true);
     });
   };
 
-  S._start = async function (workletSource) {
-    // Dev aid: ?testtone=220 feeds a gliding synthetic tone instead of the mic.
+  S._start = async function (workletSource, deviceId) {
     const testHz = parseFloat(new URLSearchParams(location.search).get("testtone") || "0");
     if (!testHz) {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error("Microphone needs a secure page (https or localhost).");
       }
-      S.stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: false,
-          channelCount: 1,
-        },
-        video: false,
-      });
+      const audio = {
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false,
+        channelCount: 1,
+      };
+      if (deviceId) audio.deviceId = { exact: deviceId };
+      try {
+        S.stream = await navigator.mediaDevices.getUserMedia({ audio: audio, video: false });
+      } catch (e) {
+        // A remembered device that's been unplugged: fall back to the default.
+        if (deviceId && (e.name === "OverconstrainedError" || e.name === "NotFoundError")) {
+          delete audio.deviceId;
+          S.stream = await navigator.mediaDevices.getUserMedia({ audio: audio, video: false });
+        } else {
+          throw e;
+        }
+      }
+      const track = S.stream.getAudioTracks()[0];
+      S.currentDeviceId = (track && track.getSettings().deviceId) || "";
+      S.refreshDevices();
     }
 
     const AC = window.AudioContext || window.webkitAudioContext;
@@ -73,11 +100,21 @@
       channelCount: 1,
       channelCountMode: "explicit",
     });
+    S._zeroSince = 0;
     S.node.port.onmessage = function (ev) {
       const m = ev.data;
       if (Array.isArray(m)) {
         S.queue.push(m);
         if (S.queue.length > 2000) S.queue.splice(0, S.queue.length - 2000);
+        // Exact zeros = digital silence (a real mic always has some noise).
+        if (m[3] === 0) {
+          if (!S._zeroSince) S._zeroSince = performance.now();
+        } else {
+          S._zeroSince = 0;
+        }
+        S._diag.frames++;
+        S._diag.maxRms = Math.max(S._diag.maxRms, m[3]);
+        S._diag.last = m;
       } else if (m && m.type === "info") {
         S.workletInfo = m;
       }
@@ -92,6 +129,27 @@
 
     S.state = "running";
   };
+
+  S.isSilent = function () {
+    return S.state === "running" && S._zeroSince > 0 && performance.now() - S._zeroSince > SILENCE_MS;
+  };
+
+  S.refreshDevices = async function () {
+    try {
+      const all = await navigator.mediaDevices.enumerateDevices();
+      const list = [];
+      all.forEach(function (d) {
+        if (d.kind !== "audioinput" || d.deviceId === "default" || d.deviceId === "communications") return;
+        list.push({ id: d.deviceId, label: d.label || "Microphone " + (list.length + 1) });
+      });
+      S.devicesJson = JSON.stringify(list);
+    } catch (e) {
+      S.devicesJson = "[]";
+    }
+  };
+  if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+    navigator.mediaDevices.addEventListener("devicechange", function () { S.refreshDevices(); });
+  }
 
   // Sawtooth through a lowpass, gliding up and down a few semitones, with vibrato.
   S._testTone = function (hz) {
@@ -124,7 +182,7 @@
     try { if (S.node) S.node.disconnect(); } catch (e) {}
     try { if (S.stream) S.stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {}
     try { if (S.ctx) S.ctx.close(); } catch (e) {}
-    S.node = null; S.stream = null; S.ctx = null; S.queue = [];
+    S.node = null; S.stream = null; S.ctx = null; S.queue = []; S._zeroSince = 0;
     if (!keepError) { S.state = "idle"; S.error = ""; }
   };
 
@@ -144,12 +202,36 @@
     return JSON.stringify({
       contextRate: S.ctx ? S.ctx.sampleRate : 0,
       baseLatency: S.ctx ? S.ctx.baseLatency || 0 : 0,
+      device: track ? track.label : "",
       echoCancellation: settings.echoCancellation,
       noiseSuppression: settings.noiseSuppression,
       autoGainControl: settings.autoGainControl,
       worklet: S.workletInfo,
     });
   };
+
+  // Dev diagnostics (?diag=1 on localhost only): report mic status to the
+  // local dev server every 2 s; it shows up in the server's request log.
+  const params = new URLSearchParams(location.search);
+  const local = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+  if (local && params.get("diag") === "1") {
+    setInterval(function () {
+      const track = S.stream && S.stream.getAudioTracks()[0];
+      const p = new URLSearchParams({
+        state: S.state,
+        error: S.error || "",
+        ctx: S.ctx ? S.ctx.state : "none",
+        device: track ? track.label : "none",
+        frames: S._diag.frames,
+        maxRms: S._diag.maxRms.toFixed(5),
+        silent: S.isSilent() ? "yes" : "no",
+        last: S._diag.last ? S._diag.last.map(function (v) { return Number(v).toFixed(3); }).join("/") : "",
+      });
+      S._diag.frames = 0;
+      S._diag.maxRms = 0;
+      fetch("/__diag?" + p.toString()).catch(function () {});
+    }, 2000);
+  }
 
   window.solfegePitch = S;
 })();

@@ -28,6 +28,25 @@ func describe() -> String:
 	return ""
 
 
+## Available inputs as [{id, label}] (empty until the platform allows listing).
+func devices() -> Array:
+	return []
+
+
+func current_device() -> String:
+	return ""
+
+
+## Switch input device ("" = platform default). Restarts if running.
+func select_device(_id: String) -> void:
+	pass
+
+
+## True when the input is exact digital silence (wrong device), not a quiet room.
+func input_silent() -> bool:
+	return false
+
+
 func _set_state(s: State, message := "") -> void:
 	if s == state and message == "":
 		return

@@ -44,6 +44,9 @@ func _build() -> void:
 			_trace.center_midi = 57.0
 			_trace.history_seconds = 3.0
 			_trace.show_feedback = false
+			var picker := MicPicker.new()
+			picker.only_when_silent = true
+			_col.add_child(picker)
 			_col.add_child(_trace)
 			_update_status()
 		Phase.DONE:

@@ -13,7 +13,7 @@ signal feedback_changed(text: String)
 @export var span_semitones := 20.0         ## visible range, centered on center_midi
 @export var tolerance_cents := 50.0        ## shaded band around each lane
 @export var min_confidence := 0.6
-@export var min_rms := 0.004
+@export var min_rms := 0.0015
 @export var smoothing_seconds := 0.03      ## light smoothing; vibrato stays visible
 
 @export_group("Colors")

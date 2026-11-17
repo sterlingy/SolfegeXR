@@ -10,7 +10,7 @@ const TRIM := 1              ## semitones pulled in from each measured extreme
 var lows: Array[float] = []
 var highs: Array[float] = []
 var min_confidence := 0.75
-var min_rms := 0.006
+var min_rms := 0.002
 
 
 func add_low(f: PitchFrame) -> void:

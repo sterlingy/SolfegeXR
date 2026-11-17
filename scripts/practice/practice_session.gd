@@ -99,8 +99,14 @@ func sing_elapsed(source_now: float) -> float:
 	return source_now - sing_origin_source
 
 
+## Without headphones the mic hears the speakers, so nothing may play while the
+## learner sings: the drone stops and sing-along references play first instead.
+func speakers_only() -> bool:
+	return not profile.has_headphones
+
+
 func _after_cadence() -> void:
-	if exercise.reference == Exercise.Reference.BEFORE:
+	if exercise.reference == Exercise.Reference.BEFORE 			or (exercise.reference == Exercise.Reference.ALONG and speakers_only()):
 		var len := _engine.sequence(targets, 1.0, _engine.time() + 0.1)
 		_enter(Phase.LISTEN, len + 0.3)
 	else:
@@ -112,6 +118,10 @@ func _begin_sing(source_now: float) -> void:
 	_sing_start_engine = _engine.time()
 	scorer = PhraseScorer.new(targets, exercise.key, profile.scoring_settings())
 	scorer.latency = 0.0
+	if speakers_only():
+		_engine.set_drone(-1)
+		_enter(Phase.SING, length_seconds() + TAIL_SECONDS)
+		return
 	if exercise.reference == Exercise.Reference.ALONG:
 		_play_guide()
 	if exercise.accompaniment:
@@ -166,6 +176,9 @@ func _finish() -> void:
 
 
 func _enter(p: Phase, seconds: float) -> void:
+	# Fade the drone during the count-in so its release is over by the downbeat.
+	if p == Phase.COUNT_IN and speakers_only():
+		_engine.set_drone(-1)
 	phase = p
 	_phase_end = _engine.time() + seconds
 	phase_changed.emit(p)

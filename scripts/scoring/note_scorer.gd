@@ -17,8 +17,9 @@ var onset_grace := 0.15          ## seconds ignored at note start (scoop)
 var onset_grace_fraction := 0.25 ## ...or this fraction of the note, whichever is smaller
 var smoothing_window := 0.18     ## seconds; ~one cycle of 5.5 Hz vibrato
 var min_confidence := 0.6
-var min_rms := 0.004
+var min_rms := 0.0015
 var landed_ratio := 0.7          ## share of scored time in tolerance to count as landed
+var max_spread_cents := 150.0    ## median deviation above this = not a steady sung note
 
 var target_midi: int
 var start_time: float
@@ -85,6 +86,14 @@ func result() -> NoteResult:
 		octave_votes[octave] = octave_votes.get(octave, 0) + 1
 	r.in_tune_ratio = float(in_tol) / scored.size()
 	r.median_cents = _median(cents)
+	# Background noise and speech jump around; a sung note (even with vibrato
+	# or drift) stays put. Unsteady "notes" aren't judged at all.
+	var spread: Array[float] = []
+	for c in cents:
+		spread.append(absf(c - r.median_cents))
+	if _median(spread) > max_spread_cents:
+		r.verdict = Verdict.NO_VOICE
+		return r
 	r.octave_offset = _argmax(octave_votes)
 
 	# Drift: least-squares slope of cents over time, and where it started.

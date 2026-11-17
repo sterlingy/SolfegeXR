@@ -109,3 +109,14 @@ func test_phrase_routes_frames_to_notes() -> void:
 	assert_eq(r[1].verdict, V.LANDED)
 	assert_true(r[2].verdict != V.LANDED, "third note should not land")
 	assert_near(p.landed_fraction(), 2.0 / 3.0, 0.01)
+
+
+func test_scattered_noise_is_not_judged() -> void:
+	seed(7)
+	var r := sing(NoteScorer.new(A3, 0.0, 1.0, key), func(_t): return randf_range(-6.0, 6.0))
+	assert_eq(r.verdict, V.NO_VOICE, "random pitches are ignored")
+
+
+func test_drift_still_judged_with_spread_check() -> void:
+	var r := sing(NoteScorer.new(A3, 0.0, 3.0, key), func(t): return -0.6 * t + vibrato(t))
+	assert_true(r.verdict != V.NO_VOICE, "a long drifting note is still a note")

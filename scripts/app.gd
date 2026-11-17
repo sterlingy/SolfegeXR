@@ -52,8 +52,19 @@ func fake_singer() -> FakePitchSource:
 ## Start listening (on web this must follow a tap: browsers need a user gesture).
 func ensure_listening() -> void:
 	var s := pitch_source()
+	if s is WebPitchSource:
+		(s as WebPitchSource).device_id = profile.mic_device_id
 	if s.state == PitchSource.State.IDLE or s.state == PitchSource.State.ERROR:
 		s.start()
+
+
+## Choose a microphone; remembered in the profile.
+func select_mic(id: String) -> void:
+	if id == "demo":
+		return
+	profile.mic_device_id = id
+	profile.save()
+	pitch_source().select_device(id)
 
 
 func go(screen: String, args := {}, remember := true) -> void:

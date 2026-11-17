@@ -45,9 +45,14 @@ func _ready() -> void:
 	_fake_source = FakePitchSource.new()
 	add_child(_fake_source)
 	if OS.has_feature("web"):
-		_web_source = WebPitchSource.new()
-		add_child(_web_source)
-		_web_source.state_changed.connect(_on_source_state)
+		# Share the app's mic source (and its chosen device).
+		_web_source = App.pitch_source() as WebPitchSource
+		if _web_source:
+			_web_source.state_changed.connect(_on_source_state)
+	var picker := MicPicker.new()
+	picker.only_when_silent = true
+	$Margin/Column.add_child(picker)
+	$Margin/Column.move_child(picker, 1)
 	demo_toggle.button_pressed = _web_source == null
 	demo_toggle.disabled = _web_source == null
 
@@ -102,7 +107,10 @@ func _on_start_pressed() -> void:
 		return
 	source = _fake_source if demo_toggle.button_pressed else _web_source
 	trace.clear()
-	source.start()
+	if source == _web_source:
+		App.ensure_listening()
+	else:
+		source.start()
 	start_button.text = "Stop"
 	if source == _fake_source:
 		feedback.text = "Demo singer (no microphone)."
