@@ -3,7 +3,8 @@ extends RefCounted
 ## Everything the app remembers about the learner, saved locally as JSON in
 ## user:// (on web that's the browser's IndexedDB). Nothing is shared.
 
-const SAVE_PATH := "user://profile.json"
+## Where save()/load_or_new() go by default (dev runs point this elsewhere).
+static var save_path := "user://profile.json"
 const VERSION := 1
 
 var voice_low := 48            ## comfortable range from the range test (MIDI)
@@ -98,7 +99,9 @@ static func from_dict(d: Dictionary) -> LearnerProfile:
 	return p
 
 
-func save(path := SAVE_PATH) -> Error:
+func save(path := "") -> Error:
+	if path == "":
+		path = save_path
 	var f := FileAccess.open(path, FileAccess.WRITE)
 	if f == null:
 		return FileAccess.get_open_error()
@@ -106,7 +109,9 @@ func save(path := SAVE_PATH) -> Error:
 	return OK
 
 
-static func load_or_new(path := SAVE_PATH) -> LearnerProfile:
+static func load_or_new(path := "") -> LearnerProfile:
+	if path == "":
+		path = save_path
 	if not FileAccess.file_exists(path):
 		return LearnerProfile.new()
 	var d: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))

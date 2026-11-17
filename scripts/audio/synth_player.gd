@@ -18,6 +18,8 @@ func _ready() -> void:
 	gen.mix_rate = AudioServer.get_mix_rate()
 	gen.buffer_length = 0.1  # 100 ms: enough headroom for frame hitches
 	stream = gen
+	# Web exports default to "sample" playback, which can't play generators.
+	playback_type = AudioServer.PLAYBACK_TYPE_STREAM
 	engine = SynthEngine.new(gen.mix_rate)
 	play()
 	_playback = get_stream_playback()

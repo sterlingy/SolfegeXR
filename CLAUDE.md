@@ -49,7 +49,10 @@ Guardrails: phone-first portrait touch UI everywhere; early throwaway native And
 - `web/` holds the JS mic bridge and the AudioWorklet YIN detector. They ship as plain text through the export preset's `include_filter`.
 - `scripts/pitch/`: `PitchSource` (abstract), `WebPitchSource`, `FakePitchSource` (demo singer for the editor), `PitchFrame`.
 - `scripts/music/music_key.gd`: tonic + mode, scale degrees, syllable rendering.
-- `scripts/ui/`: `PitchTrace` (custom-drawn lanes + trace) and `main.gd`.
+- `scripts/ui/`: `PitchTrace` (custom-drawn lanes, targets, trace), `main.gd` (free-sing sandbox), `ui.gd` (shared look), `screens/*.gd` (onboarding, range_test, home, practice, course, settings, progress, free_sing). Screens are built in code.
+- `scripts/app.gd`: the `App` autoload (profile, pitch source, synth, navigation via `App.go(name, args)`). Root scene: `scenes/app_root.tscn`.
+- `scripts/scoring/`, `scripts/song/`, `scripts/curriculum/`, `scripts/practice/`, `scripts/audio/`, `scripts/dsp/`: scoring, import and analysis, skill model and courses, the practice flow, the synth, offline YIN and WAV.
+- Dev args (app_root): `-- --profile=user://dev.json --demo --screen=home|practice-core|course:<song_id> --autostart --screenshot=out.png --wait=4`.
 - How to run, test on Android, and read the debug line: [docs/RUNNING.md](docs/RUNNING.md). Dev args: `-- --demo`, `-- --screenshot=out.png`.
 - Commit `*.uid` files. Godot 4.4+ uses them to keep resource references stable.
 - Tests: `Godot_..._console.exe --headless --path . -s res://tests/run_tests.gd` (see docs/RUNNING.md). Run them before every commit.

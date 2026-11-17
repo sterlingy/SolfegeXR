@@ -6,8 +6,12 @@ config_version=5
 
 config/name="SolfegeApp"
 config/description="Learn to sing in key with movable-do solfège."
-run/main_scene="res://scenes/main.tscn"
+run/main_scene="res://scenes/app_root.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
+
+[autoload]
+
+App="*res://scripts/app.gd"
 
 [display]
 

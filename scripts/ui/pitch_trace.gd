@@ -8,6 +8,7 @@ extends Control
 signal feedback_changed(text: String)
 
 @export var history_seconds := 4.0
+@export var keep_seconds := 20.0          ## points kept (so a finished attempt can be zoomed out)
 @export var now_fraction := 0.78           ## x position of "now", 0..1 of width
 @export var span_semitones := 20.0         ## visible range, centered on center_midi
 @export var tolerance_cents := 50.0        ## shaded band around each lane
@@ -24,6 +25,8 @@ signal feedback_changed(text: String)
 @export var line_color := Color("7fd3ff")
 @export var line_on_target := Color("8cf0a6")
 @export var folded_color := Color("7fd3ff", 0.35)
+@export var target_color := Color("ffd27a", 0.30)
+@export var target_border := Color("ffd27a", 0.75)
 
 var key := MusicKey.new()
 var center_midi := 57.0
@@ -36,6 +39,8 @@ var _last_time := 0.0
 var _now := 0.0
 var _font: Font
 var _feedback := ""
+var _targets: Array = []   # {midi, start, duration} in the trace clock
+var show_feedback := true
 
 
 func _ready() -> void:
@@ -54,6 +59,26 @@ func clear() -> void:
 	queue_redraw()
 
 
+## Show target notes. `origin` is the trace-clock time of target start 0.
+func set_targets(targets: Array, origin: float) -> void:
+	_targets.clear()
+	for t in targets:
+		_targets.append({midi = t.midi, start = origin + t.start, duration = t.duration})
+	queue_redraw()
+
+
+func clear_targets() -> void:
+	_targets.clear()
+	queue_redraw()
+
+
+## Frame the view around a note range (with a little margin).
+func fit_range(low: int, high: int) -> void:
+	span_semitones = maxf(12.0, high - low + 5.0)
+	center_midi = (low + high) / 2.0
+	queue_redraw()
+
+
 func low_midi() -> float:
 	return center_midi - span_semitones * 0.5
 
@@ -65,7 +90,7 @@ func high_midi() -> float:
 ## Advance the scroll clock even without new frames (keeps scrolling smooth).
 func set_now(t: float) -> void:
 	_now = maxf(_now, t)
-	var cutoff := _now - history_seconds - 0.5
+	var cutoff := _now - maxf(history_seconds, keep_seconds) - 0.5
 	while _points.size() > 0 and _points[0].x < cutoff:
 		_points.pop_front()
 	queue_redraw()
@@ -141,6 +166,8 @@ func _update_feedback(shown: float, lane: int, cents: float, folded: bool) -> vo
 
 
 func _set_feedback(text: String) -> void:
+	if not show_feedback:
+		return
 	if text != _feedback:
 		_feedback = text
 		feedback_changed.emit(text)
@@ -172,6 +199,21 @@ func _draw() -> void:
 					HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, label_color)
 		elif key.chromatic_enabled:
 			draw_line(Vector2(0, y), Vector2(size.x, y), Color(lane_color, 0.06), 1.0)
+
+	# Target notes: bars on their lanes, labeled with the syllable.
+	for t in _targets:
+		var x0 := _x_of(t.start)
+		var x1 := _x_of(t.start + t.duration)
+		if x1 < 0.0 or x0 > size.x:
+			continue
+		var y := _y_of(t.midi)
+		var r := Rect2(x0, y - band_h, maxf(4.0, x1 - x0 - 4.0), band_h * 2.0)
+		draw_rect(r, target_color)
+		draw_rect(r, target_border, false, 2.0)
+		var syl := key.syllable_of(t.midi)
+		if syl != "" and x1 - x0 > font_size:
+			draw_string(_font, Vector2(x0 + 8, y + font_size * 0.35), syl,
+					HORIZONTAL_ALIGNMENT_LEFT, -1, int(font_size * 0.8), Color(1, 1, 1, 0.9))
 
 	# "Now" marker.
 	var now_x := size.x * now_fraction

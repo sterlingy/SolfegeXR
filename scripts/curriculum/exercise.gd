@@ -16,6 +16,8 @@ var drone := true
 var cadence_first := true
 var reference := Reference.BEFORE
 var accompaniment := false           ## chord pad under the melody (backing-track stage)
+var guide_fade := false              ## guide voice fades out (ensemble stage 4)
+var record := true                   ## counts toward skill progress (false for warm-ups)
 var song_id := ""                    ## set for song-derived drills
 var parts: Array = []                ## ensemble: other parts as {name, targets} (already realized)
 ## Song drills store pitches relative to this MIDI base (already transposed

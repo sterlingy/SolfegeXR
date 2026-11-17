@@ -132,6 +132,7 @@ static func _ensemble(a: SongAnalyzer.Result, c: Course) -> Array[Exercise]:
 			"Stage %d" % (i + 1), ENSEMBLE_STAGES[i] + ". Headphones on.")
 		e.reference = Exercise.Reference.ALONG if i in [2, 3] else Exercise.Reference.NONE
 		e.accompaniment = i >= 1
+		e.guide_fade = i == 3
 		if i >= 4:
 			for p in a.song.parts:
 				if p == a.song.melody():
