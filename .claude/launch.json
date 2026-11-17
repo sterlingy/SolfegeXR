@@ -4,8 +4,30 @@
     {
       "name": "web-build",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8060", "--bind", "127.0.0.1", "--directory", "build/web"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8060",
+        "--bind",
+        "127.0.0.1",
+        "--directory",
+        "build/web"
+      ],
       "port": 8060
+    },
+    {
+      "name": "web-build-lan",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8061",
+        "--bind",
+        "0.0.0.0",
+        "--directory",
+        "build/web"
+      ],
+      "port": 8061
     }
   ]
 }
