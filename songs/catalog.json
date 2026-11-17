@@ -1,0 +1,79 @@
+[
+  {
+    "id": "01_ode_to_joy",
+    "title": "Ode to Joy",
+    "file": "res://songs/01_ode_to_joy.musicxml",
+    "confidence": "high",
+    "note": "Beethoven, Symphony No. 9 theme. Stepwise; the first song."
+  },
+  {
+    "id": "02_when_the_saints",
+    "title": "When the Saints Go Marching In",
+    "file": "res://songs/02_when_the_saints.musicxml",
+    "confidence": "medium",
+    "note": "Narrow range (an octave)."
+  },
+  {
+    "id": "03_coming_round_the_mountain",
+    "title": "She'll Be Coming 'Round the Mountain",
+    "file": "res://songs/03_coming_round_the_mountain.musicxml",
+    "confidence": "low",
+    "note": "Repeated notes; group sing-along. Melody especially uncertain in phrases 3-4."
+  },
+  {
+    "id": "04_oh_susanna",
+    "title": "Oh! Susanna",
+    "file": "res://songs/04_oh_susanna.musicxml",
+    "confidence": "medium",
+    "note": "Steps plus small leaps. Lyrics: later standard verses."
+  },
+  {
+    "id": "05_auld_lang_syne",
+    "title": "Auld Lang Syne",
+    "file": "res://songs/05_auld_lang_syne.musicxml",
+    "confidence": "medium",
+    "note": "Sol-to-do leap at the start. Verse high confidence; chorus medium."
+  },
+  {
+    "id": "06_amazing_grace",
+    "title": "Amazing Grace",
+    "file": "res://songs/06_amazing_grace.musicxml",
+    "confidence": "medium",
+    "note": "Pentatonic; sustained notes."
+  },
+  {
+    "id": "07_drunken_sailor",
+    "title": "Drunken Sailor",
+    "file": "res://songs/07_drunken_sailor.musicxml",
+    "confidence": "high",
+    "note": "D Dorian; tests the minor/mode setting."
+  },
+  {
+    "id": "08_take_me_out_to_the_ball_game",
+    "title": "Take Me Out to the Ball Game",
+    "file": "res://songs/08_take_me_out_to_the_ball_game.musicxml",
+    "confidence": "low",
+    "note": "Chromatic notes (G#, F#). 1908 lyrics. Second half especially uncertain."
+  },
+  {
+    "id": "09_shenandoah",
+    "title": "Shenandoah",
+    "file": "res://songs/09_shenandoah.musicxml",
+    "confidence": "low",
+    "note": "Long phrases, breath control, wide range."
+  },
+  {
+    "id": "10_danny_boy",
+    "title": "Danny Boy (Londonderry Air)",
+    "file": "res://songs/10_danny_boy.musicxml",
+    "confidence": "low",
+    "note": "Wide range; the graduation song."
+  },
+  {
+    "id": "11_carol_of_the_bells",
+    "title": "Shchedryk (Carol of the Bells), layered",
+    "file": "res://songs/11_carol_of_the_bells.musicxml",
+    "confidence": "arrangement",
+    "note": "Original 4-part layering on the public-domain folk ostinato; not Leontovych's exact score."
+  }
+]
