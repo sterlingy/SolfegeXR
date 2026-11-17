@@ -1,0 +1,41 @@
+# Godot 4 cache / generated
+.godot/
+*.import.tmp
+*.tmp
+# Note: *.import sidecar files ARE committed in Godot 4 (they hold import settings).
+
+# Export output
+build/
+export/
+*.apk
+*.aab
+*.pck
+*.zip
+
+# Godot export presets can contain keystore paths/passwords
+export_credentials.cfg
+
+# Native / GDExtension build artifacts
+*.obj
+*.o
+*.os
+*.lib
+*.a
+*.dll
+*.so
+*.dylib
+*.wasm.map
+.sconsign.dblite
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Mono (if ever used)
+.mono/
+data_*/
+mono_crash.*.json
