@@ -1,0 +1,6 @@
+# Godot projects use LF; keep it consistent on every machine.
+* text=auto eol=lf
+*.wav binary
+*.png binary
+*.ogg binary
+*.mid binary
