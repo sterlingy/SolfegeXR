@@ -28,7 +28,9 @@ func _ready() -> void:
 	var parsed: Variant = JSON.parse_string(text)
 	if parsed is Array:
 		catalog = parsed
-	use_demo_singer = not OS.has_feature("web")
+	# Desktop/mobile builds use the real mic too; --demo (dev) or the Settings
+	# toggle switches to the demo singer.
+	use_demo_singer = false
 	if OS.has_feature("web"):
 		JavaScriptBridge.eval(FileAccess.get_file_as_string("res://web/platform.js"), true)
 
@@ -56,13 +58,18 @@ func ios_audio_tip() -> String:
 
 ## The active pitch source (created on first use).
 func pitch_source() -> PitchSource:
-	var want_fake := use_demo_singer or not OS.has_feature("web")
+	var want_fake := use_demo_singer
 	if _source and (_source is FakePitchSource) != want_fake:
 		_source.stop()
 		_source.queue_free()
 		_source = null
 	if _source == null:
-		_source = FakePitchSource.new() if want_fake else WebPitchSource.new()
+		if want_fake:
+			_source = FakePitchSource.new()
+		elif OS.has_feature("web"):
+			_source = WebPitchSource.new()
+		else:
+			_source = NativePitchSource.new()
 		add_child(_source)
 	return _source
 
@@ -77,6 +84,8 @@ func ensure_listening() -> void:
 	var s := pitch_source()
 	if s is WebPitchSource:
 		(s as WebPitchSource).device_id = profile.mic_device_id
+	elif s is NativePitchSource and profile.mic_device_id != "":
+		AudioServer.input_device = profile.mic_device_id
 	if s.state == PitchSource.State.IDLE or s.state == PitchSource.State.ERROR:
 		s.start()
 

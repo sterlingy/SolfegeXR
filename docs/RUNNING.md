@@ -1,12 +1,22 @@
 # Running the pitch-trace prototype
 
 ## In the editor (no mic)
-Open the project in Godot 4.7 and press F5. Tap **Start**: the *Demo singer* walks up and down the scale, so you can see the trace without a browser.
+Open the project in Godot 4.7 and press F5. It uses your real microphone; turn on *Demo singer* (Free sing, or Settings → Developer) to see the trace without singing.
 
 From a terminal:
 ```
 Godot_v4.7.2-stable_win64.exe --path . -- --demo
 ```
+
+## As a desktop program (real mic)
+Running the project from the editor (F5) or as a Windows build uses the **native mic path**. Godot records the default input into a muted "Mic" audio bus, and the C++ detector (`YinNative`, see native/README.md) analyzes it. If the C++ library isn't built, a slower GDScript fallback is used. Pick the input in **Settings → Microphone**. Add `-- --demo` to use the demo singer instead.
+
+Quick check that the mic works, without the app UI:
+```
+Godot_v4.7.2-stable_win64_console.exe --path . -s res://tools/mic_probe.gd -- 4
+Godot_v4.7.2-stable_win64_console.exe --path . -s res://tools/mic_probe.gd -- 4 tone
+```
+The second version plays a 220 Hz tone through the speakers; a working mic reports a median of about 220 Hz.
 
 ## In desktop Chrome (real mic)
 1. Install the export templates once: **Editor → Manage Export Templates → Download and Install**.

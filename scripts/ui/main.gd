@@ -22,7 +22,7 @@ const VOICE_RANGES := [
 
 var key := MusicKey.new(9, MusicKey.Mode.IONIAN)  # A major
 var source: PitchSource
-var _web_source: WebPitchSource
+var _web_source: PitchSource   ## the real mic (web or native), null in demo mode
 var _fake_source: FakePitchSource
 var _frame_count := 0
 var _frame_window := 0.0
@@ -44,11 +44,11 @@ func _ready() -> void:
 
 	_fake_source = FakePitchSource.new()
 	add_child(_fake_source)
-	if OS.has_feature("web"):
-		# Share the app's mic source (and its chosen device).
-		_web_source = App.pitch_source() as WebPitchSource
-		if _web_source:
-			_web_source.state_changed.connect(_on_source_state)
+	# Share the app's mic source (and its chosen device): web or native.
+	var app_src := App.pitch_source()
+	if not (app_src is FakePitchSource):
+		_web_source = app_src
+		_web_source.state_changed.connect(_on_source_state)
 	var picker := MicPicker.new()
 	picker.only_when_silent = true
 	$Margin/Column.add_child(picker)

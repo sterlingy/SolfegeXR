@@ -10,6 +10,10 @@ run/main_scene="res://scenes/app_root.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icons/icon_512.png"
 
+[audio]
+
+driver/enable_input=true
+
 [autoload]
 
 App="*res://scripts/app.gd"
