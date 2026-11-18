@@ -58,5 +58,8 @@ Guardrails: phone-first portrait touch UI everywhere; early throwaway native And
 - Tests: `Godot_..._console.exe --headless --path . -s res://tests/run_tests.gd` (see docs/RUNNING.md). Run them before every commit.
 - `thirdparty/` is git-ignored; fetch with `tools/fetch_godot_cpp.sh`.
 
+## More docs
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (how it fits together, how to add things) · [docs/STATUS.md](docs/STATUS.md) (what's done and verified, what needs a person) · [docs/HOSTING.md](docs/HOSTING.md) · [docs/SONGS.md](docs/SONGS.md) · user manual and privacy page in `site/`.
+
 ## Open questions
 App name · lyric versions for songs 1–10 · ensemble stage details · which ChordMasterXR code seeds the shared addon · mastery thresholds.
