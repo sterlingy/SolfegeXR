@@ -1,7 +1,7 @@
 // SolfegeApp pitch detector: AudioWorklet processor (runs on the audio thread).
 //
-// Temporary JavaScript stand-in for the shared C++ YIN/pYIN detector. When the
-// C++ version is compiled to WASM it replaces analyze() below; the message
+// Runs the shared C++ YIN detector (yin.wasm) when the bridge provides it, and
+// otherwise falls back to the JavaScript version in analyze() below. The message
 // format to the main thread stays the same.
 //
 // Pipeline: mic samples -> decimate to ~24 kHz -> ring buffer -> every HOP
@@ -17,9 +17,52 @@ const MIN_HZ = 70;         // lowest fundamental we look for (low bass ~E2 = 82 
 const MAX_HZ = 1200;       // highest (soprano top ~C6 = 1047 Hz)
 const YIN_THRESHOLD = 0.15;
 
+// The shared C++ detector (native/src/yin.cpp) compiled to WebAssembly. The
+// bridge compiles yin.wasm on the main thread and hands the Module over in
+// processorOptions; if anything fails we fall back to the JS version below.
+class WasmYin {
+  constructor(module, rate) {
+    const stub = () => 0;
+    const inst = new WebAssembly.Instance(module, {
+      env: { emscripten_notify_memory_growth: () => {} },
+      wasi_snapshot_preview1: { fd_close: stub, fd_write: stub, fd_seek: stub },
+    });
+    this.x = inst.exports;
+    if (this.x._initialize) this.x._initialize();
+    this.mem = this.x.memory;
+    this.block = this.x.yin_block_size();
+    this.h = this.x.yin_create(rate, HOP);
+    if (!this.h) throw new Error("yin_create failed");
+    this.inPtr = this.x.yin_input(this.h);
+  }
+  // Feeds input-rate samples; calls emit(time, hz, conf, rms) per estimate.
+  push(ch, emit) {
+    for (let off = 0; off < ch.length; off += this.block) {
+      const n = Math.min(this.block, ch.length - off);
+      new Float32Array(this.mem.buffer, this.inPtr, n).set(ch.subarray(off, off + n));
+      const count = this.x.yin_push(this.h, n);
+      if (count > 0) {
+        const out = new Float32Array(this.mem.buffer, this.x.yin_output(this.h), count * 4);
+        for (let i = 0; i < count; i++) emit(out[i * 4], out[i * 4 + 1], out[i * 4 + 2], out[i * 4 + 3]);
+      }
+    }
+  }
+}
+
 class SolfegePitchProcessor extends AudioWorkletProcessor {
-  constructor() {
+  constructor(options) {
     super();
+    this.wasm = null;
+    let wasmError = "";
+    const mod = options && options.processorOptions && options.processorOptions.yinModule;
+    if (mod) {
+      try {
+        this.wasm = new WasmYin(mod, sampleRate);
+      } catch (e) {
+        wasmError = String(e);
+      }
+    }
+    this.t0 = -1; // context time of the first sample fed to the WASM detector
     this.decim = Math.max(1, Math.round(sampleRate / TARGET_RATE));
     this.rate = sampleRate / this.decim;
     this.tauMin = Math.max(2, Math.floor(this.rate / MAX_HZ));
@@ -32,13 +75,22 @@ class SolfegePitchProcessor extends AudioWorkletProcessor {
     this.accum = 0;      // decimation accumulator (box filter)
     this.accumN = 0;
     this.diff = new Float32Array(this.tauMax + 2);
-    this.port.postMessage({ type: "info", sampleRate, rate: this.rate, decim: this.decim });
+    this.port.postMessage({
+      type: "info", sampleRate, rate: this.rate, decim: this.decim,
+      detector: this.wasm ? "wasm" : "js", wasmError,
+    });
   }
 
   process(inputs) {
     const input = inputs[0];
     if (!input || input.length === 0) return true;
     const ch = input[0];
+    if (this.wasm) {
+      if (this.t0 < 0) this.t0 = currentTime;
+      // C++ times are seconds since the first sample; map to context time.
+      this.wasm.push(ch, (t, hz, conf, rms) => this.port.postMessage([this.t0 + t, hz, conf, rms]));
+      return true;
+    }
     for (let i = 0; i < ch.length; i++) {
       // Simple box-filter decimation. Fine for voice: harmonics above 12 kHz
       // barely matter to YIN, and aliasing of them is tiny.

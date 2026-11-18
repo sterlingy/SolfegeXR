@@ -60,3 +60,21 @@ Add `?testtone=220` to the URL, for example `http://localhost:8060/?testtone=220
 Godot_v4.7.2-stable_win64_console.exe --headless --path . -s res://tests/run_tests.gd
 ```
 Add `-- name` to run only tests whose `file:method` contains `name`. Tests live in `tests/test_*.gd` and extend `TestCase`. The exit code is the number of failures.
+
+`node tests/wasm_parity.mjs` checks that `web/yin.wasm` and the JavaScript fallback give the same pitch and frame count for a set of test tones. Run it after rebuilding the WASM.
+
+## The pitch detector on the web (WebAssembly)
+The web build runs the shared C++ detector (`native/src/yin.cpp`) as `web/yin.wasm`. The JavaScript version in `web/pitch_worklet.js` is the fallback when the WASM can't load. The debug info shows which one is running (`detector: "wasm"` or `"js"`). Add `?detector=js` to the URL to force the fallback for comparison.
+
+Rebuild `web/yin.wasm` after changing the detector. It needs the Emscripten SDK; set `EMSDK` to its folder (the default is `%LOCALAPPDATA%/solfege-tools/emsdk`):
+```
+EMSDK=<emsdk folder> EM_CONFIG=<emsdk folder>/.emscripten bash tools/build_wasm.sh
+```
+`web/yin.wasm` is committed, so a normal export doesn't need Emscripten.
+
+## The detector for Android (GDExtension)
+```
+cd native
+python -m SCons platform=android arch=arm64 target=template_debug
+```
+Set `ANDROID_HOME` to the Android SDK and `ANDROID_NDK_ROOT` to its `ndk/<version>` folder first. The output goes to `bin/libsolfege.android.template_debug.arm64.so`. Use `target=template_release` for the release library.

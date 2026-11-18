@@ -3,7 +3,8 @@
 // Godot evaluates this file once (JavaScriptBridge.eval) and then talks to
 // window.solfegePitch through JavaScriptBridge.get_interface().
 //
-//   start(workletSource, deviceId)  -> begins mic capture (async; watch .state).
+//   start(workletSource, deviceId, wasmB64)  -> begins mic capture (async; watch .state).
+//                                      wasmB64 = yin.wasm as base64 ("" = JS detector).
 //                                      deviceId "" = the browser's choice.
 //   stop()
 //   drain()            -> JSON string: [[t, hz, conf, rms], ...] since last drain
@@ -42,18 +43,18 @@
     _diag: { frames: 0, maxRms: 0, last: null },
   };
 
-  S.start = function (workletSource, deviceId) {
+  S.start = function (workletSource, deviceId, wasmB64) {
     if (S.state === "running" || S.state === "starting") return;
     S.state = "starting";
     S.error = "";
-    S._start(workletSource, deviceId || "").catch(function (e) {
+    S._start(workletSource, deviceId || "", wasmB64 || "").catch(function (e) {
       S.state = "error";
       S.error = (e && (e.name + ": " + e.message)) || String(e);
       S.stop(true);
     });
   };
 
-  S._start = async function (workletSource, deviceId) {
+  S._start = async function (workletSource, deviceId, wasmB64) {
     const testHz = parseFloat(new URLSearchParams(location.search).get("testtone") || "0");
     if (!testHz) {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -99,7 +100,20 @@
     }
 
     const src = testHz ? S._testTone(testHz) : S.ctx.createMediaStreamSource(S.stream);
+    // Shared C++ detector as WebAssembly; "?detector=js" forces the JS fallback.
+    let yinModule = null;
+    if (wasmB64 && new URLSearchParams(location.search).get("detector") !== "js") {
+      try {
+        const bin = atob(wasmB64);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        yinModule = await WebAssembly.compile(bytes);
+      } catch (e) {
+        console.warn("yin.wasm unavailable, using JS detector:", e);
+      }
+    }
     S.node = new AudioWorkletNode(S.ctx, "solfege-pitch", {
+      processorOptions: yinModule ? { yinModule: yinModule } : {},
       numberOfInputs: 1,
       numberOfOutputs: 1,
       channelCount: 1,

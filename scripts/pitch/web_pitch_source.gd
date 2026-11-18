@@ -5,6 +5,7 @@ extends PitchSource
 
 const BRIDGE_PATH := "res://web/pitch_bridge.js"
 const WORKLET_PATH := "res://web/pitch_worklet.js"
+const WASM_PATH := "res://web/yin.wasm"  ## shared C++ detector; JS fallback if missing
 
 var _js: JavaScriptObject
 var _last_js_state := ""
@@ -23,7 +24,9 @@ func start() -> void:
 	if _js == null:
 		_set_state(State.ERROR, "Pitch bridge not loaded")
 		return
-	_js.start(FileAccess.get_file_as_string(WORKLET_PATH), device_id)
+	var wasm := FileAccess.get_file_as_bytes(WASM_PATH)
+	var wasm_b64 := Marshalls.raw_to_base64(wasm) if wasm.size() > 0 else ""
+	_js.start(FileAccess.get_file_as_string(WORKLET_PATH), device_id, wasm_b64)
 
 
 func stop() -> void:

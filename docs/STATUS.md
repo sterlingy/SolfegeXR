@@ -1,4 +1,4 @@
-# Status
+# Status: Solfège Master XR
 
 Last updated 18 November 2026. The full history is in `git log`.
 
@@ -9,7 +9,7 @@ Last updated 18 November 2026. The full history is in `git log`.
 | **Web** (main target) | Working; shared with testers through the tunnel ([HOSTING.md](HOSTING.md)) | Desktop Chrome (mic), Android Chrome (mic), iPad Pro Safari (mic, audio-session fix active) |
 | iPhone (Safari) | Should match iPad; silent-switch fix in place | Not yet |
 | Desktop (native Windows) | Native mic plus C++ detector working | This PC: a 220 Hz tone through the speakers detected as 220.1 Hz |
-| Native Android | Next: toolchain downloads and license need approval | — |
+| Native Android | Detector library built (`bin/libsolfege.android.template_debug.arm64.so`; release build not yet); APK via `tools/android/build_apk.ps1`, run from your own PowerShell | — |
 | Android XR / OpenXR | After native Android | — |
 | WebXR | Not planned; possible shortcut to an XR prototype | — |
 
@@ -31,7 +31,7 @@ Last updated 18 November 2026. The full history is in `git log`.
 | Installable app (PWA) with update prompt | Done (placeholder icon) |
 | Timing check | Done; real device numbers not measured yet |
 | User manual, privacy page | Done (`/manual/`, `/privacy/`) |
-| C++ detector as WebAssembly | Waiting on Emscripten download approval |
+| C++ detector as WebAssembly | Done: the web build runs `web/yin.wasm`, with the JS detector as fallback (`?detector=js`); matches JS exactly (`node tests/wasm_parity.mjs`) |
 
 ## Needs a person
 
@@ -39,10 +39,8 @@ Last updated 18 November 2026. The full history is in `git log`.
 - **Carol of the Bells:** a public-domain Leontovych score, if the original arrangement is wanted.
 - **iPhone test; Timing check on real phones** (Settings → Check timing).
 - **Approvals:**
-  - downloads for Emscripten (about 1 GB) and the Android toolchain (about 3–4 GB)
-  - the Android SDK license
   - a way to install on the phone
-- **Decisions:** app name and branding (replaces the placeholder icon); stable hosting address and tester login; WebXR prototype or not.
+- **Decisions:** branding and icon (the app name, Solfège Master XR, is decided; the icon replaces the placeholder); stable hosting address and tester login; WebXR prototype or not.
 
 ## Known limits
 
