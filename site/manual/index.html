@@ -57,6 +57,16 @@
   .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px 18px; margin: 16px 0; }
   .card > :first-child { margin-top: 0; }
   .card > :last-child { margin-bottom: 0; }
+  .quick { border: 2px solid var(--accent); margin-top: 20px; }
+  .quick h2 { margin: 0 0 8px; padding: 0; font-size: 1.25rem; }
+  .steps { counter-reset: step; list-style: none; padding: 0; margin: 0; }
+  .steps li { counter-increment: step; position: relative; padding: 0 0 12px 44px; }
+  .steps li::before {
+    content: counter(step); position: absolute; left: 0; top: 0;
+    width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: var(--bg);
+    font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+  .check { margin: 4px 0 0; padding-top: 10px; border-top: 1px solid var(--line); }
   .tip { border-left: 4px solid var(--good); }
   .note { border-left: 4px solid var(--warm); }
   table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 0.95rem; }
@@ -80,8 +90,21 @@
   <a class="open-app" href="../">Open the app</a>
 </header>
 
+<section id="quick-start" class="card quick">
+  <h2>Quick start: your first note in 2 minutes</h2>
+  <ol class="steps">
+    <li><strong>Open the app</strong> and tap <strong>Let's go</strong>. For the setup questions, the suggested answers are fine: tap <strong>Use la-based</strong>, then <strong>Continue</strong>, then answer the headphones question.</li>
+    <li><strong>Find your range.</strong> Tap <strong>Start</strong> and <strong>Allow</strong> the microphone. Slide your voice down on "ooo" for a few seconds, then up. Tap <strong>Sounds good</strong>. In a hurry? Tap <strong>Skip: choose a voice type</strong> instead.</li>
+    <li><strong>Start your first lesson.</strong> On the home screen, tap <strong>Start</strong> under <em>Next lesson</em>, then <strong>Start</strong> again.</li>
+    <li><strong>Listen, then sing.</strong> You'll hear a few chords, then four notes: <span class="syl">do, mi, sol, do</span>. When the screen says <strong>Sing!</strong>, sing them back (any sound works, like "la"). Follow the yellow bars as they reach the line.</li>
+    <li><strong>See how you did.</strong> Your voice stays drawn over the yellow bars: <strong>green</strong> means you landed the note. Read the message below it, then tap <strong>Again</strong> to try once more, or <strong>Next ›</strong> to move on. If it went by too fast, tap <strong>Slow</strong>.</li>
+  </ol>
+  <p class="check"><strong>Is it working?</strong> While you hum, a line should move on screen. No line at all? See <a href="#trouble">Troubleshooting</a>. It's almost always the microphone permission, or the wrong microphone selected.</p>
+</section>
+
 <nav class="toc" aria-label="Contents">
   <strong>Contents</strong>
+  <p style="margin:0 0 6px">New here? Start with the <a href="#quick-start">Quick start</a>.</p>
   <ol>
     <li><a href="#before">Before you start</a></li>
     <li><a href="#first-run">First run</a></li>
