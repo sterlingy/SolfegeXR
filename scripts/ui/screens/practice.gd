@@ -43,7 +43,7 @@ func _build() -> void:
 	t.add_theme_font_size_override("font_size", 34)
 	t.add_theme_color_override("font_color", UI.MUTED)
 	t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER  # top-right is kept clear for the page's Manual link
 	top.add_child(t)
 
 	_heading = UI.title(_col, "", 56)
