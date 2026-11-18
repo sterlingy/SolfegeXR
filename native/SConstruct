@@ -6,7 +6,7 @@ import os
 
 env = SConscript("../thirdparty/godot-cpp/SConstruct")
 env.Append(CPPPATH=["src/"])
-sources = Glob("src/*.cpp")
+sources = [f for f in Glob("src/*.cpp") if "yin_wasm" not in str(f)]
 
 lib = "../bin/libsolfege{}{}".format(env["suffix"], env["SHLIBSUFFIX"])
 library = env.SharedLibrary(lib, source=sources)

@@ -25,10 +25,32 @@ func _ready() -> void:
 	_rate = AudioServer.get_mix_rate()
 
 
+const ANDROID_MIC := "android.permission.RECORD_AUDIO"
+
+
 func start() -> void:
 	if state == State.RUNNING:
 		return
 	_set_state(State.STARTING)
+	# Android asks the user at runtime; start once they've answered.
+	if OS.get_name() == "Android" and ANDROID_MIC not in OS.get_granted_permissions():
+		if not get_tree().on_request_permissions_result.is_connected(_on_permission):
+			get_tree().on_request_permissions_result.connect(_on_permission)
+		OS.request_permission("RECORD_AUDIO")
+		return
+	_start_capture()
+
+
+func _on_permission(permission: String, granted: bool) -> void:
+	if permission != ANDROID_MIC:
+		return
+	if granted:
+		_start_capture()
+	else:
+		_set_state(State.ERROR, "The app needs the microphone to hear you. Allow it in the system settings.")
+
+
+func _start_capture() -> void:
 	_ensure_bus()
 	if _player == null:
 		_player = AudioStreamPlayer.new()
