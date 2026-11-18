@@ -21,6 +21,7 @@ var _history: Array = []         ## [[name, args], ...] for Back
 
 
 func _ready() -> void:
+	UI.install_music_font()
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--profile="):
 			LearnerProfile.save_path = a.trim_prefix("--profile=")

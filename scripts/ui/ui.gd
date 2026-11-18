@@ -17,6 +17,22 @@ const GUTTER := 40
 const BUTTON_H := 120
 
 
+const MUSIC_FONT_PATH := "res://assets/fonts/NotoMusic-Regular.ttf"
+
+
+## Godot's built-in font has no ♯ or ♭, and web builds can't borrow them from
+## the system, so they show as boxes. Add Noto Music as a fallback on the
+## default font (same fix as ChordMasterXR). Call once, before any UI is built.
+static func install_music_font() -> void:
+	var theme := ThemeDB.get_project_theme()
+	if theme == null or not ResourceLoader.exists(MUSIC_FONT_PATH):
+		return
+	var f := FontVariation.new()
+	f.base_font = theme.default_font if theme.default_font else ThemeDB.fallback_font
+	f.fallbacks = [load(MUSIC_FONT_PATH)]
+	theme.default_font = f
+
+
 ## Background + margins + scrolling column. Returns the column to add to.
 static func page(screen: Control, scroll := true) -> VBoxContainer:
 	var bg := ColorRect.new()
