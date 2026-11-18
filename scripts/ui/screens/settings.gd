@@ -47,6 +47,7 @@ func setup(_args: Dictionary) -> void:
 	var help := UI.card(col)
 	UI.label(help, "Help", 40)
 	UI.button(help, "User manual", func(): App.open_manual())
+	UI.button(help, "Check timing", func(): App.go("latency_check"))
 
 	var data := UI.card(col)
 	UI.label(data, "Your data", 40)
