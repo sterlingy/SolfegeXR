@@ -21,7 +21,9 @@ var transparent := false      ## the world shows through (AR / see-through)
 var mode_label := "AR"        ## "AR" or "VR", for buttons
 
 var _web: WebXRInterface
-var _openxr: OpenXRInterface
+## OpenXR (native builds). Typed as XRInterface: the web build doesn't include
+## the OpenXRInterface class, so naming it would break the script there.
+var _openxr: XRInterface
 var _ar_supported := false
 var _vr_supported := false
 
@@ -37,7 +39,7 @@ func _ready() -> void:
 			_web.is_session_supported("immersive-ar")
 			_web.is_session_supported("immersive-vr")
 	elif OS.has_feature("xr"):
-		_openxr = XRServer.find_interface("OpenXR") as OpenXRInterface
+		_openxr = XRServer.find_interface("OpenXR")
 		available = _openxr != null
 		if available:
 			_start_openxr.call_deferred()
@@ -97,7 +99,8 @@ func _start_openxr() -> void:
 			transparent = true
 			break
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
-	Engine.physics_ticks_per_second = int(_openxr.get_display_refresh_rate()) if _openxr.get_display_refresh_rate() > 0 else 72
+	var hz: float = _openxr.call("get_display_refresh_rate") if _openxr.has_method("get_display_refresh_rate") else 0.0
+	Engine.physics_ticks_per_second = int(hz) if hz > 0.0 else 72
 	active = true
 	_switch_to_xr()
 
