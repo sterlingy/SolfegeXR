@@ -1,6 +1,6 @@
 # Architecture
 
-How SolfegeApp fits together, for developers joining the project. The product decisions are in [CLAUDE.md](../CLAUDE.md); running and testing are in [RUNNING.md](RUNNING.md).
+How Solfège Master XR (codename SolfegeApp) fits together, for developers joining the project. The product decisions are in [CLAUDE.md](../CLAUDE.md); running and testing are in [RUNNING.md](RUNNING.md).
 
 Godot terms by UE equivalent: a **scene** is like a Blueprint or prefab, a **node** is like an actor or component, an **autoload** is like a GameInstance subsystem, a **signal** is like an event dispatcher, and a **Resource** is like a DataAsset.
 

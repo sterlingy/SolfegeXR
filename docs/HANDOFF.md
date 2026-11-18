@@ -29,7 +29,7 @@ An app that teaches adults who believe they can't sing to sing a song in key, us
 
 - **Learner:** an adult who thinks they can't sing, and wants the confidence to sing with others.
 - **Goal:** sing a song in key, in a key that fits the learner's own voice.
-- **Name:** none yet. "SolfegeApp" is the working codename.
+- **Name:** none yet. "SolfegeApp" is the working codename. *(Update 2026-11-18: the brand name is now **Solfège Master XR**.)*
 - **Relationship to ChordMasterXR:** a separate product that borrows ChordMasterXR's tech and branding. ChordMasterXR is the user's company's Godot XR guitar-chord app. It's a team project with other developers.
 
 ## Learning approach

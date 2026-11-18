@@ -1,4 +1,6 @@
-# SolfegeApp (working codename)
+# Solfège Master XR
+
+Brand name: **Solfège Master XR** (grave accent on the second e). Code, folders and identifiers keep the old codename (`SolfegeApp`, `SolfegeXR`); the Godot `config/name` stays `SolfegeApp` because it sets the save-data folder.
 
 Teaches adults who believe they can't sing to sing a song in key, using **movable-do solfège** and live microphone pitch feedback. Full background: [docs/HANDOFF.md](docs/HANDOFF.md). Design doc: https://claude.ai/artifact/Y2N1LR4gFB6d5oMuAsxjqu
 
@@ -62,4 +64,4 @@ Guardrails: phone-first portrait touch UI everywhere; early throwaway native And
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (how it fits together, how to add things) · [docs/STATUS.md](docs/STATUS.md) (what's done and verified, what needs a person) · [docs/HOSTING.md](docs/HOSTING.md) · [docs/SONGS.md](docs/SONGS.md) · user manual and privacy page in `site/`.
 
 ## Open questions
-App name · lyric versions for songs 1–10 · ensemble stage details · which ChordMasterXR code seeds the shared addon · mastery thresholds.
+Branding and icon · lyric versions for songs 1–10 · ensemble stage details · which ChordMasterXR code seeds the shared addon · mastery thresholds.
