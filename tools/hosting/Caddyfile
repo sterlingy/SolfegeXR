@@ -1,0 +1,25 @@
+# Serves the release web build (build/public) to the Cloudflare tunnel.
+# Listens on 127.0.0.1 only: reachable from outside only through the tunnel,
+# not from the studio LAN. Run from the project root (see serve_public.sh).
+{
+	admin off
+	auto_https off
+}
+
+# Any hostname (the tunnel forwards the public one), bound to this PC only.
+http://:8090 {
+	bind 127.0.0.1
+	root * build/public
+	encode zstd gzip
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		# Only this page may use the mic; nothing else is requested.
+		Permissions-Policy "microphone=(self), camera=(), geolocation=()"
+		-Server
+	}
+	# Builds change often during development: browsers re-check every load
+	# (cheap 304s when nothing changed).
+	header Cache-Control "no-cache"
+	file_server
+}
