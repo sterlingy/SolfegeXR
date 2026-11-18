@@ -17,6 +17,7 @@ driver/enable_input=true
 [autoload]
 
 App="*res://scripts/app.gd"
+XRMode="*res://scripts/xr/xr_mode.gd"
 
 [display]
 
@@ -37,3 +38,8 @@ textures/vram_compression/import_etc2_astc=true
 [gui]
 
 theme/custom="res://theme/app_theme.tres"
+
+[xr]
+
+openxr/enabled.android=true
+shaders/enabled=true

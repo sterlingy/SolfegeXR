@@ -5,6 +5,9 @@ extends Node
 
 const SCREENS_DIR := "res://scripts/ui/screens/"
 
+## The syllable the learner is aiming at right now (practice), for the XR hand sign.
+signal target_syllable_changed(syllable: String)
+
 var profile: LearnerProfile
 var synth: SynthPlayer
 var catalog: Array = []          ## [{id, title, file, confidence, note}]

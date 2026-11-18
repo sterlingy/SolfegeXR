@@ -11,6 +11,9 @@ func setup(_args: Dictionary) -> void:
 		var b := UI.button(r, item[0], func(): App.go(item[1]))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.add_theme_font_size_override("font_size", 36)
+	_xr_button = UI.button(col, "", _on_xr, true)
+	_update_xr_button()
+	XRMode.availability_changed.connect(func(_a): _update_xr_button())
 
 	var next := Curriculum.next_skill(p)
 	var lesson := UI.card(col)
@@ -42,6 +45,25 @@ func setup(_args: Dictionary) -> void:
 	var help := UI.flat_button("How to use this app ›", func(): App.open_manual())
 	col.add_child(help)
 
+
+
+var _xr_button: Button
+
+
+func _update_xr_button() -> void:
+	if XRMode.active:
+		_xr_button.text = "Exit " + XRMode.mode_label
+		_xr_button.visible = OS.has_feature("web")
+	else:
+		_xr_button.text = "Enter %s (glasses / headset)" % XRMode.mode_label
+		_xr_button.visible = XRMode.available
+
+
+func _on_xr() -> void:
+	if XRMode.active:
+		XRMode.exit()
+	else:
+		XRMode.enter()
 
 
 func _start_core(skill: Skills.Id) -> void:

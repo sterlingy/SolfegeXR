@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/xr/xr_root.gd" id="1_xr"]
+
+[node name="XRRoot" type="Node3D"]
+script = ExtResource("1_xr")

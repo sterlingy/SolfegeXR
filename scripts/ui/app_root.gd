@@ -33,6 +33,10 @@ func _ready() -> void:
 			shot = a.trim_prefix("--screenshot=")
 		elif a.begins_with("--wait="):
 			wait = a.trim_prefix("--wait=").to_float()
+		elif a == "--xr-preview" and not (get_parent() is SubViewport):
+			get_tree().change_scene_to_file.call_deferred(XRMode.XR_SCENE)
+			_screenshot_later(args)
+			return
 	if screen == "practice-core" or screen.begins_with("practice:"):
 		# practice:PITCH_MATCH[:index] opens a core lesson (default: Steps).
 		var bits := screen.split(":")
@@ -61,7 +65,7 @@ func _ready() -> void:
 		App.go("onboarding", {}, false)
 	else:
 		App.go("home", {}, false)
-	if shot != "":
+	if shot != "" and not (get_parent() is SubViewport):  # the XR panel's copy doesn't screenshot
 		await get_tree().create_timer(wait).timeout
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png(shot)
@@ -81,3 +85,21 @@ func _on_pwa_update() -> void:
 	_update_bar = UI.button(holder, "A new version is ready. Tap to update.",
 		func(): JavaScriptBridge.pwa_update(), true)
 	_update_bar.add_theme_font_size_override("font_size", 38)
+
+
+## Screenshot support that survives a scene change (used by --xr-preview).
+func _screenshot_later(args: PackedStringArray) -> void:
+	var shot := ""
+	var wait := 4.0
+	for a in args:
+		if a.begins_with("--screenshot="):
+			shot = a.trim_prefix("--screenshot=")
+		elif a.begins_with("--wait="):
+			wait = a.trim_prefix("--wait=").to_float()
+	if shot == "":
+		return
+	var tree := get_tree()
+	tree.create_timer(wait).timeout.connect(func():
+		await RenderingServer.frame_post_draw
+		tree.root.get_texture().get_image().save_png(shot)
+		tree.quit())

@@ -21,6 +21,8 @@ var _result: Label
 var _start_button: Button
 var _next_button: Button
 var _tempo_buttons: Array[Button] = []
+var _announced := ""
+var _preview_targets: Array = []
 
 
 func setup(args: Dictionary) -> void:
@@ -113,6 +115,7 @@ func _load_exercise() -> void:
 	_trace.history_seconds = 1.8
 	_trace.clear()
 	var preview := PracticeSession.new(e, App.profile, _tempo)
+	_preview_targets = preview.reference
 	if e.mode == Exercise.Mode.SIREN:
 		_trace.fit_range(App.profile.voice_low, App.profile.voice_high)
 	else:
@@ -219,6 +222,27 @@ func _process(_delta: float) -> void:
 		_status.text = "I can't hear the microphone. Check the browser's permission."
 	if _session:
 		_session.update(frames, src.now())
+	_announce_target(src)
+
+
+## Tell the app (and the XR hand sign) which syllable is being aimed at.
+func _announce_target(src: PitchSource) -> void:
+	var targets: Array = _session.targets if _session and not _session.targets.is_empty() else _preview_targets
+	if targets.is_empty():
+		return
+	var midi: float = targets[0].midi
+	if _session and _session.phase == PracticeSession.Phase.SING:
+		var t := _session.sing_elapsed(src.now())
+		for tg in targets:
+			if t >= tg.start - 0.15:
+				midi = tg.midi
+				# Halfway through a glide, show where it's heading.
+				if tg.has("midi_end") and t > tg.start + tg.duration * 0.5:
+					midi = tg.midi_end
+	var syl := _exercise().key.syllable_of(roundi(midi))
+	if syl != _announced:
+		_announced = syl
+		App.target_syllable_changed.emit(syl)
 
 
 func _exit_tree() -> void:
