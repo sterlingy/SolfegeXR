@@ -72,4 +72,4 @@ func test_course_from_imported_song() -> void:
 	var a := SongAnalyzer.analyze(SongLibrary.parse_file(SongLibrary.find(r.id).file))
 	var c := CourseBuilder.build(a, LearnerProfile.new())
 	assert_true(c.steps.size() > 5, "course has drills and phrases")
-	assert_eq(c.steps[-1].title, "The whole song")
+	assert_true(c.steps.any(func(e): return e.title == "The whole song"))

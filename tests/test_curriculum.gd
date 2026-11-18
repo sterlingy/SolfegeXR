@@ -140,9 +140,9 @@ func test_course_drills_use_song_material() -> void:
 	assert_eq(t[0].midi - t[1].midi, 7, "D down to G, transposed")
 	for n in t:
 		assert_true(n.midi >= p.voice_low and n.midi <= p.voice_high, "in voice: %d" % n.midi)
-	var last := c.steps[-1]
-	assert_eq(last.title, "The whole song")
-	assert_eq(last.realize_for(p).size(), 62, "every note of Ode to Joy")
+	var whole: Exercise = c.steps.filter(func(e): return e.title == "The whole song")[0]
+	assert_eq(whole.realize_for(p).size(), 62, "every note of Ode to Joy")
+	assert_eq(c.steps[-1].skill, Skills.Id.BACKING_TRACK, "then the song with a backing track")
 
 
 func test_chromatic_toggle_controls_drills() -> void:

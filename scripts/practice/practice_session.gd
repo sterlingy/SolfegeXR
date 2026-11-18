@@ -159,24 +159,43 @@ func _play_guide() -> void:
 			_engine.note(t.midi, _sing_start_engine + t.start, t.duration * 0.97, SynthEngine.Kind.VOICE, g)
 
 
-## Simple backing: the tonic chord under each phrase-length stretch.
+## Backing track: a chord per bar that fits the melody (Harmonizer), played
+## as bass on the strong beats and chords on the others ("oom-pah").
 func _play_chords() -> void:
 	var tonic := drone_tonic()
-	var len := length_seconds()
-	var bar := 4.0 * 60.0 / exercise.tempo_bpm / tempo_scale
-	var t := 0.0
-	var steps := exercise.key.steps()
-	var chord_degrees := [0, 3, 4, 0]
-	var i := 0
-	while t < len:
-		var d: int = chord_degrees[i % 4]
-		for k in [0, 2, 4]:
-			var semi: int = steps[(d + k) % 7] + (12 if d + k >= 7 else 0)
-			while semi > 9:
-				semi -= 12
-			_engine.note(tonic + semi, _sing_start_engine + t, bar * 0.95, SynthEngine.Kind.PAD, 0.07)
-		t += bar
-		i += 1
+	var beat := 60.0 / exercise.tempo_bpm / tempo_scale
+	var bpm := maxf(1.0, exercise.beats_per_measure)
+	var bar := bpm * beat
+	var first_bar := 0.0
+	if exercise.bar_offset_beats > 0.0:
+		first_bar = exercise.bar_offset_beats * beat - bar
+	var beats := roundi(bpm)
+	for c in Harmonizer.chords_for(targets, exercise.key, bar, length_seconds(), first_bar):
+		var root_semi: int = c.tones[0]
+		var fifth_semi: int = c.tones[2]
+		for b in beats:
+			var t: float = c.start + b * beat
+			if t < -0.001 or t >= length_seconds():
+				continue
+			var strong := b == 0 or (beats == 4 and b == 2)
+			if strong:
+				var bass_semi := root_semi if b == 0 else fifth_semi
+				_engine.note(tonic - 12 + _fold(bass_semi, -2), _sing_start_engine + t, beat * 0.9,
+					SynthEngine.Kind.PAD, 0.13)
+			else:
+				for semi in c.tones:
+					_engine.note(tonic + _fold(semi, 2), _sing_start_engine + t, beat * 0.6,
+						SynthEngine.Kind.PAD, 0.06)
+
+
+## Fold a pitch class into an octave window starting `low` semitones above the tonic.
+static func _fold(semi: int, low: int) -> int:
+	var s := semi
+	while s >= low + 12:
+		s -= 12
+	while s < low:
+		s += 12
+	return s
 
 
 func _finish() -> void:

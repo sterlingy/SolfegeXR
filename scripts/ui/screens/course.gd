@@ -28,12 +28,14 @@ func setup(args: Dictionary) -> void:
 	if analysis.song.parts.size() > 1:
 		UI.muted(col, "Melody: %s (from %d parts in the file)" % [analysis.song.melody().name, analysis.song.parts.size()], 28)
 
-	var needs_phones := analysis.needs(Skills.Id.ENSEMBLE) and not App.profile.has_headphones
+	var told := false
 	for i in course.steps.size():
 		var e: Exercise = course.steps[i]
-		if e.skill == Skills.Id.ENSEMBLE and needs_phones:
-			UI.muted(col, "Ensemble stages need headphones (Settings).")
-			break
+		if e.needs_headphones and not App.profile.has_headphones:
+			if not told:
+				UI.muted(col, "Steps with music (backing track, other voices) need headphones. Turn on \"I have headphones\" in Settings.")
+				told = true
+			continue
 		var b := UI.button(col, e.title, func(): _open(course, i))
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.add_theme_font_size_override("font_size", 38)

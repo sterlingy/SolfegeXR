@@ -22,7 +22,10 @@ var cadence_first := true
 var reference := Reference.BEFORE
 var mode := Mode.NOTES
 var sing_seconds := 6.0               ## SIREN / SLIDE_TO: time allowed to sing
-var accompaniment := false           ## chord pad under the melody (backing-track stage)
+var accompaniment := false           ## backing track under the melody
+var needs_headphones := false        ## only offered when the learner has headphones
+var beats_per_measure := 4.0         ## for the backing track's bars
+var bar_offset_beats := 0.0          ## beats before the first barline (a pickup), 0 = starts on one
 var guide_fade := false              ## guide voice fades out (ensemble stage 4)
 var record := true                   ## counts toward skill progress (false for warm-ups)
 var song_id := ""                    ## set for song-derived drills

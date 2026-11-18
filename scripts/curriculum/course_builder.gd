@@ -60,6 +60,17 @@ static func build(analysis: SongAnalyzer.Result, profile: LearnerProfile) -> Cou
 		"The whole song", "Put it all together. Take your time.")
 	whole.reference = Exercise.Reference.ALONG
 	c.steps.append(whole)
+	# Then with a backing track (needs headphones: the mic must not hear it).
+	if not c.skills_needed.has(Skills.Id.BACKING_TRACK):
+		c.skills_needed.append(Skills.Id.BACKING_TRACK)
+		if not profile.is_mastered(Skills.Id.BACKING_TRACK):
+			c.skills_to_learn.append(Skills.Id.BACKING_TRACK)
+	var backing := _from_notes(analysis, c, 0, analysis.notes.size() - 1, Skills.Id.BACKING_TRACK,
+		"With a backing track", "Sing the whole song over a simple accompaniment. Headphones on.")
+	backing.accompaniment = true
+	backing.reference = Exercise.Reference.NONE
+	backing.needs_headphones = true
+	c.steps.append(backing)
 	if analysis.needs(Skills.Id.ENSEMBLE):
 		c.steps.append_array(_ensemble(analysis, c))
 	return c
@@ -133,6 +144,7 @@ static func _ensemble(a: SongAnalyzer.Result, c: Course) -> Array[Exercise]:
 		e.reference = Exercise.Reference.ALONG if i in [2, 3] else Exercise.Reference.NONE
 		e.accompaniment = i >= 1
 		e.guide_fade = i == 3
+		e.needs_headphones = true
 		if i >= 4:
 			for p in a.song.parts:
 				if p == a.song.melody():
@@ -170,6 +182,8 @@ static func _from_notes(a: SongAnalyzer.Result, c: Course, first: int, last: int
 	e.title = title
 	e.prompt = prompt
 	e.tempo_bpm = a.song.tempo_bpm
+	e.beats_per_measure = a.song.beats_per_measure
+	e.bar_offset_beats = _beats_to_first_barline(a, first, last)
 	var tonic := c.key.tonic_pc
 	var cursor := a.notes[first].start
 	for i in range(first, last + 1):
@@ -182,6 +196,18 @@ static func _from_notes(a: SongAnalyzer.Result, c: Course, first: int, last: int
 	e.song_id = a.song.title
 	e.fixed_base = tonic
 	return e
+
+
+## Beats from the first note to the first barline, using the notes' measure
+## numbers (0 when the first note sits on a downbeat).
+static func _beats_to_first_barline(a: SongAnalyzer.Result, first: int, last: int) -> float:
+	var m0 := a.notes[first].measure
+	for i in range(first + 1, last + 1):
+		if a.notes[i].measure != m0:
+			var gap := a.notes[i].start - a.notes[first].start
+			var bpm := a.song.beats_per_measure
+			return 0.0 if gap >= bpm - 1e-3 else gap
+	return 0.0
 
 
 static func _label(syl: String) -> String:
