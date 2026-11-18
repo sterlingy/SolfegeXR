@@ -15,6 +15,9 @@ const VOICE_VIBRATO_DELAY := 0.25
 
 var rate: float
 var master_gain := 0.8
+## When set (web builds), notes are sent here instead of rendered locally:
+## an object with note(Dictionary), time() -> float, stop_kind(int), release_all().
+var sink: Object = null
 var _now := 0          ## samples rendered so far
 var _voices: Array[Dictionary] = []
 
@@ -25,7 +28,7 @@ func _init(p_rate := 48000.0) -> void:
 
 ## Current engine time in seconds (what `at` values are relative to).
 func time() -> float:
-	return _now / rate
+	return sink.time() if sink else _now / rate
 
 
 ## Schedule a note. `at` is absolute engine time in seconds (use time() + delay).
@@ -47,6 +50,10 @@ func note(midi: float, at: float, duration: float, kind := Kind.VOICE, gain := 0
 		cutoff = minf(hz * 4.0, 3000.0) if kind == Kind.VOICE else (700.0 if kind == Kind.DRONE else 1800.0),
 		released_at = -1,
 	}
+	if sink:
+		sink.note({kind = kind, hz = hz, gain = gain, at = at, dur = duration,
+			attack = v.attack, release = v.release, saw_mix = v.saw_mix, cutoff = v.cutoff})
+		return
 	_voices.append(v)
 
 
@@ -102,12 +109,18 @@ func sequence(notes: Array, tempo := 1.0, at := -1.0) -> float:
 
 
 func stop_kind(kind: Kind) -> void:
+	if sink:
+		sink.stop_kind(kind)
+		return
 	for v in _voices:
 		if v.kind == kind and v.released_at < 0:
 			v.released_at = _now
 
 
 func release_all() -> void:
+	if sink:
+		sink.release_all()
+		return
 	for v in _voices:
 		if v.released_at < 0:
 			v.released_at = _now

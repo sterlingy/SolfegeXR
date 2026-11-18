@@ -13,7 +13,20 @@ var engine: SynthEngine
 var _playback: AudioStreamGeneratorPlayback
 
 
+var web_sink: WebSynthSink
+
+
 func _ready() -> void:
+	# Web: render in a browser AudioWorklet (smooth on phones). Elsewhere, or if
+	# that fails to start, render here in GDScript through a generator.
+	if OS.has_feature("web"):
+		web_sink = WebSynthSink.new()
+		if web_sink.ok():
+			engine = SynthEngine.new(48000.0)
+			engine.sink = web_sink
+			return
+		push_warning("Web synth unavailable (%s); using GDScript synth" % web_sink.state())
+		web_sink = null
 	var gen := AudioStreamGenerator.new()
 	gen.mix_rate = AudioServer.get_mix_rate()
 	gen.buffer_length = 0.1  # 100 ms: enough headroom for frame hitches
@@ -31,6 +44,8 @@ func _process(_delta: float) -> void:
 
 
 func _fill() -> void:
+	if web_sink:
+		return
 	if _playback == null:
 		return
 	var n := _playback.get_frames_available()
