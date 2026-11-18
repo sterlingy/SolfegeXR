@@ -52,4 +52,4 @@ bin/
 # OpenXR vendors plugin (binaries; fetched by tools/android/setup_xr.sh)
 addons/godotopenxrvendors/
 # Godot Android build template (installed by the editor/CLI)
-android/
+/android/
