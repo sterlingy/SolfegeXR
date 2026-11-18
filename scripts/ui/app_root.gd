@@ -8,8 +8,16 @@ extends Control
 ##   -- --wait=4
 
 
+var _update_bar: Button
+
+
 func _ready() -> void:
 	App.root = self
+	# Installed web app (PWA): when a newer version has been deployed, offer it.
+	if OS.has_feature("web"):
+		JavaScriptBridge.pwa_update_available.connect(_on_pwa_update)
+		if JavaScriptBridge.pwa_needs_update():
+			_on_pwa_update.call_deferred()
 	var args := OS.get_cmdline_user_args()
 	var screen := ""
 	var shot := ""
@@ -58,3 +66,18 @@ func _ready() -> void:
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png(shot)
 		get_tree().quit()
+
+
+func _on_pwa_update() -> void:
+	if _update_bar:
+		return
+	var holder := MarginContainer.new()
+	holder.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	holder.offset_top = -170
+	holder.z_index = 100
+	for side in ["left", "right", "bottom"]:
+		holder.add_theme_constant_override("margin_" + side, UI.GUTTER)
+	add_child(holder)
+	_update_bar = UI.button(holder, "A new version is ready. Tap to update.",
+		func(): JavaScriptBridge.pwa_update(), true)
+	_update_bar.add_theme_font_size_override("font_size", 38)

@@ -11,6 +11,7 @@ cd "$ROOT"
 GODOT="${GODOT:-/c/Godot/Godot_v4.7.2-stable_win64_console.exe}"
 LOGS="$ROOT/build/hosting"
 mkdir -p "$LOGS"
+touch "$ROOT/build/.gdignore"   # keep the Godot editor from importing build output
 
 if [ "${1:-}" != "--no-export" ]; then
   echo "Exporting release web build..."
