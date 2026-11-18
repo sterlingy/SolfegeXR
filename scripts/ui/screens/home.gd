@@ -26,6 +26,14 @@ func setup(_args: Dictionary) -> void:
 	else:
 		UI.button(lesson, "Start", func(): _start_core(next), true)
 
+	var mine := SongLibrary.list()
+	if not mine.is_empty():
+		UI.label(col, "Your songs", 48)
+		for e in mine:
+			var title: String = e.title
+			UI.button(col, title, func(): App.go("course", {song_id = e.id}))
+	UI.button(col, "+ Import a song (MusicXML or MIDI)", func(): App.go("import_song"))
+
 	UI.label(col, "Songs", 48)
 	for s in App.catalog:
 		var title: String = s.title

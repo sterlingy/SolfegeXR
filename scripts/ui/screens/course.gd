@@ -5,10 +5,7 @@ extends Control
 func setup(args: Dictionary) -> void:
 	var col := UI.page(self)
 	UI.back_button(col)
-	var entry: Dictionary = {}
-	for s in App.catalog:
-		if s.id == args.song_id:
-			entry = s
+	var entry := App.song_entry(args.song_id)
 	var analysis := App.song_analysis(args.song_id)
 	if analysis == null:
 		UI.label(col, "Couldn't open that song.")
@@ -28,6 +25,9 @@ func setup(args: Dictionary) -> void:
 	if not todo.is_empty():
 		UI.label(col, "This song will teach: " + ", ".join(todo), 36, UI.WARM)
 
+	if analysis.song.parts.size() > 1:
+		UI.muted(col, "Melody: %s (from %d parts in the file)" % [analysis.song.melody().name, analysis.song.parts.size()], 28)
+
 	var needs_phones := analysis.needs(Skills.Id.ENSEMBLE) and not App.profile.has_headphones
 	for i in course.steps.size():
 		var e: Exercise = course.steps[i]
@@ -38,6 +38,16 @@ func setup(args: Dictionary) -> void:
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.add_theme_font_size_override("font_size", 38)
 
+	if entry.get("imported", false):
+		var rm := UI.flat_button("Remove this song from the app", func(): _remove(args.song_id))
+		rm.add_theme_color_override("font_color", UI.MUTED)
+		col.add_child(rm)
+
 
 func _open(course: CourseBuilder.Course, i: int) -> void:
 	App.go("practice", {exercises = course.steps, index = i, title = course.song.song.title})
+
+
+func _remove(id: String) -> void:
+	SongLibrary.remove(id)
+	App.home()

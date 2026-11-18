@@ -127,11 +127,28 @@ func home() -> void:
 	go("home", {}, false)
 
 
-func song_analysis(id: String) -> SongAnalyzer.Result:
-	for s in catalog:
+## Built-in songs plus the learner's imported ones.
+func all_songs() -> Array:
+	var out := catalog.duplicate()
+	for e in SongLibrary.list():
+		out.append({id = e.id, title = e.title, file = e.file, confidence = "yours",
+			note = "Imported " + str(e.imported_on), imported = true})
+	return out
+
+
+func song_entry(id: String) -> Dictionary:
+	for s in all_songs():
 		if s.id == id:
-			return SongAnalyzer.analyze(MusicXmlReader.load_file(s.file))
-	return null
+			return s
+	return {}
+
+
+func song_analysis(id: String) -> SongAnalyzer.Result:
+	var entry := song_entry(id)
+	if entry.is_empty():
+		return null
+	var song := SongLibrary.parse_file(entry.file)
+	return SongAnalyzer.analyze(song) if song else null
 
 
 func _notification(what: int) -> void:
