@@ -29,6 +29,29 @@ func _ready() -> void:
 	if parsed is Array:
 		catalog = parsed
 	use_demo_singer = not OS.has_feature("web")
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval(FileAccess.get_file_as_string("res://web/platform.js"), true)
+
+
+## iPhone/iPad (every iOS browser is Safari underneath).
+func is_ios() -> bool:
+	if not OS.has_feature("web"):
+		return OS.get_name() == "iOS"
+	return bool(JavaScriptBridge.eval("!!(window.solfegePlatform && window.solfegePlatform.isIOS())", true))
+
+
+## Safari 16.4+ can play tones with the silent switch on.
+func ios_handles_silent_switch() -> bool:
+	return OS.has_feature("web") and bool(JavaScriptBridge.eval("!!navigator.audioSession", true))
+
+
+## A short tip for iPhone users who might not hear the tones, or "".
+func ios_audio_tip() -> String:
+	if not is_ios() or profile.has_headphones:
+		return ""
+	if ios_handles_silent_switch():
+		return "On iPhone: if the tones are quiet, turn the volume up, or use headphones."
+	return "On iPhone: turn off silent mode (the switch on the side) to hear the tones, or use headphones."
 
 
 ## The active pitch source (created on first use).

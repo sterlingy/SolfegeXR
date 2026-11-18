@@ -39,7 +39,7 @@ Add `?testtone=220` to the URL, for example `http://localhost:8060/?testtone=220
 ## If the app can't hear you
 - **Settings → Microphone** lists every input. The range test, practice and Free sing screens show the same picker, with a warning, whenever the input is exact digital silence. That usually means the wrong device: a loop-back channel on an audio interface, or a VR headset's virtual mic. The choice is remembered.
 - Chrome keeps its own default mic, separate from Windows: `chrome://settings/content/microphone`.
-- Add `?diag=1` to the URL on localhost, and the page reports mic status (device, level, last pitch) to the dev server every 2 s. It shows up in the server's request log.
+- Add `?diag=1` to the URL, and the page reports mic status (device, level, last pitch) to the server it came from every 2 s. Locally it shows in the dev server's request log; over the tunnel it goes to `build/hosting/diag.log` (see docs/HOSTING.md).
 - Without headphones, nothing plays while you sing: the drone stops at the count-in, and sing-along references play first instead, so the mic doesn't hear the speakers. Turn on "I have headphones" in Settings to get the drone and guide voice while singing.
 
 ## Reading the debug line

@@ -59,6 +59,11 @@
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error("Microphone needs a secure page (https or localhost).");
       }
+      // iOS Safari 16.4+: a play-and-record session keeps our tones audible
+      // with the silent switch on while the mic is open.
+      if (navigator.audioSession) {
+        try { navigator.audioSession.type = "play-and-record"; } catch (e) {}
+      }
       const audio = {
         echoCancellation: false,
         noiseSuppression: false,
@@ -128,6 +133,10 @@
     mute.connect(S.ctx.destination);
 
     S.state = "running";
+  };
+
+  S.isIOS = function () {
+    return !!(window.solfegePlatform && window.solfegePlatform.isIOS());
   };
 
   S.isSilent = function () {
@@ -210,11 +219,11 @@
     });
   };
 
-  // Dev diagnostics (?diag=1 on localhost only): report mic status to the
-  // local dev server every 2 s; it shows up in the server's request log.
+  // Diagnostics (opt-in with ?diag=1): report mic status every 2 s to this
+  // same server (/__diag), where it is logged. Only numbers, the state and the
+  // mic's name are sent, and only to the site the page came from.
   const params = new URLSearchParams(location.search);
-  const local = location.hostname === "localhost" || location.hostname === "127.0.0.1";
-  if (local && params.get("diag") === "1") {
+  if (params.get("diag") === "1") {
     setInterval(function () {
       const track = S.stream && S.stream.getAudioTracks()[0];
       const p = new URLSearchParams({
@@ -225,6 +234,8 @@
         frames: S._diag.frames,
         maxRms: S._diag.maxRms.toFixed(5),
         silent: S.isSilent() ? "yes" : "no",
+        ios: S.isIOS() ? "yes" : "no",
+        session: navigator.audioSession ? navigator.audioSession.type : "n/a",
         last: S._diag.last ? S._diag.last.map(function (v) { return Number(v).toFixed(3); }).join("/") : "",
       });
       S._diag.frames = 0;

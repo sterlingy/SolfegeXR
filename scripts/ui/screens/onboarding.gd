@@ -47,6 +47,8 @@ func _show() -> void:
 		3:
 			UI.title(_col, "Headphones?", 56)
 			UI.label(_col, "Later lessons sing along with music and other voices. For those you'll need headphones, so the microphone only hears you.")
+			if App.is_ios():
+				UI.muted(_col, "On iPhone, headphones also keep the tones clear while the microphone is on.")
 			UI.button(_col, "I have headphones", func():
 				p.has_headphones = true
 				_next(), true)

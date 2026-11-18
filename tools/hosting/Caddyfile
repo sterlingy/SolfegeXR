@@ -21,5 +21,16 @@ http://:8090 {
 	# Builds change often during development: browsers re-check every load
 	# (cheap 304s when nothing changed).
 	header Cache-Control "no-cache"
+
+	# Opt-in diagnostics (?diag=1 on the page): log only these reports, never
+	# ordinary visits. Read them in build/hosting/diag.log.
+	log {
+		output file build/hosting/diag.log
+		format json
+	}
+	@notdiag not path /__diag
+	log_skip @notdiag
+	respond /__diag 204
+
 	file_server
 }

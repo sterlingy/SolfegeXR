@@ -27,6 +27,26 @@ Godot_v4.7.2-stable_win64_console.exe --headless --path . --export-release "Web"
 ```
 Testers reload the page. Caddy sends `Cache-Control: no-cache`, so browsers check for new files on every load.
 
+## Diagnostics from a tester's device
+Add `?diag=1` to the link, for example `https://….trycloudflare.com/?diag=1`. Every 2 s the page reports its mic status to this server:
+- state, and the mic's name
+- input level and the last pitch reading
+- whether the input is exact digital silence
+- whether it's an iPhone, and Safari's audio-session mode
+
+Only those reports are logged, in `build/hosting/diag.log`. Ordinary visits are never logged.
+
+## iPhone test (all iOS browsers are Safari underneath)
+1. On the iPhone, open the link with `?diag=1`. Try it first with the **silent switch on** and no headphones.
+2. Run the range test, then **Free sing**, then one practice exercise.
+3. Check:
+   - Are the chords and reference tones audible with the silent switch on? This needs iOS 16.4 or later.
+   - Does the trace follow the singer?
+   - Is playback quieter while the mic is on?
+4. Then check `build/hosting/diag.log`: `session` should read `play-and-record` once the mic is on, and `level` should move when singing.
+
+On iPhones the app shows a tip about silent mode and volume when headphones aren't set.
+
 ## Limits of the quick tunnel (fine for testing, not for launch)
 
 - **The address is random and changes** whenever the tunnel restarts, including after a reboot. Send testers the new link from `build/public_url.txt`.

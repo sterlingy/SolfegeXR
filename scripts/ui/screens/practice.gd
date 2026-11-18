@@ -53,6 +53,9 @@ func _build() -> void:
 	var picker := MicPicker.new()
 	picker.only_when_silent = true
 	_col.add_child(picker)
+	var tip := App.ios_audio_tip()
+	if tip != "":
+		UI.muted(_col, tip, 30)
 
 	_trace = PitchTrace.new()
 	_trace.size_flags_vertical = Control.SIZE_EXPAND_FILL
