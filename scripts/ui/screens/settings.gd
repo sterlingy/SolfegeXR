@@ -52,6 +52,7 @@ func setup(_args: Dictionary) -> void:
 	var data := UI.card(col)
 	UI.label(data, "Your data", 40)
 	UI.muted(data, "Progress is saved only on this device.")
+	UI.button(data, "Privacy", func(): App.open_site_page("privacy"))
 	_reset_button = UI.button(data, "Reset all progress", _on_reset)
 
 

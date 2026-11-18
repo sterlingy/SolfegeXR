@@ -92,10 +92,15 @@ func ensure_listening() -> void:
 
 ## Open the user manual (served next to the app at manual/).
 func open_manual() -> void:
+	open_site_page("manual")
+
+
+## Open one of the plain pages served next to the app (manual, privacy).
+func open_site_page(page: String) -> void:
 	if OS.has_feature("web"):
-		JavaScriptBridge.eval("window.open(new URL('manual/', location.href).href, '_blank')", true)
+		JavaScriptBridge.eval("window.open(new URL('%s/', location.href).href, '_blank')" % page, true)
 	else:
-		OS.shell_open(ProjectSettings.globalize_path("res://site/manual/index.html"))
+		OS.shell_open(ProjectSettings.globalize_path("res://site/%s/index.html" % page))
 
 
 ## Choose a microphone; remembered in the profile.

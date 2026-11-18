@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SolfegeApp Privacy</title>
+<meta name="description" content="What SolfegeApp does with your voice and your data.">
+<style>
+  :root { --bg:#f7f6f2; --surface:#fff; --text:#1d1f2b; --muted:#5d6070; --line:#e2e0d8; --accent:#1f7aa8; color-scheme: light; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg:#14151f; --surface:#1f2130; --text:#f1f1f5; --muted:#a9abbb; --line:#2e3145; --accent:#7fd3ff; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --bg:#14151f; --surface:#1f2130; --text:#f1f1f5; --muted:#a9abbb; --line:#2e3145; --accent:#7fd3ff; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:17px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; -webkit-text-size-adjust:100%; }
+  .wrap { max-width:720px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:1.9rem; line-height:1.2; margin:0 0 6px; }
+  h2 { font-size:1.25rem; margin:32px 0 8px; }
+  p, li { max-width:65ch; }
+  a { color:var(--accent); }
+  .lead { color:var(--muted); }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px 18px; margin:16px 0; }
+  .card > :first-child { margin-top:0; } .card > :last-child { margin-bottom:0; }
+  code { background:var(--line); padding:1px 6px; border-radius:6px; font-size:.92em; }
+  footer { margin-top:48px; padding-top:16px; border-top:1px solid var(--line); color:var(--muted); font-size:.9rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p><a href="../">‹ Back to the app</a> · <a href="../manual/">User manual</a></p>
+  <h1>Privacy</h1>
+  <p class="lead">Early test version. Last updated 18 November 2026.</p>
+
+  <div class="card">
+    <p><strong>In short:</strong> your voice is analyzed on your own device and never recorded or sent anywhere. Your progress stays in your browser. There are no accounts, no ads, no analytics and no cookies.</p>
+  </div>
+
+  <h2>Your voice</h2>
+  <ul>
+    <li>When you allow the microphone, the app measures the pitch of your voice in real time, on your device.</li>
+    <li>The sound itself is <strong>not recorded, stored or uploaded</strong>. Only the pitch readings are used, to draw the line on screen and score your notes, and they're discarded as you go.</li>
+    <li>The microphone is used only while you're practicing, testing your range, or using Free sing or Check timing. Your browser shows when it's in use, and you can withdraw permission at any time in its settings.</li>
+  </ul>
+
+  <h2>What's saved, and where</h2>
+  <ul>
+    <li><strong>On this device only,</strong> in this browser's storage for this site: your settings (syllable choices, headphones, speed, chosen microphone), your vocal range, your practice progress (how many notes you landed, per skill and per day), and any songs you import.</li>
+    <li>Nothing is sent to a server. Because of that, your progress doesn't follow you to other devices or browsers.</li>
+    <li><strong>To delete it:</strong> use <em>Settings → Reset all progress</em> in the app. Or clear this site's data in your browser settings, which also removes imported songs.</li>
+  </ul>
+
+  <h2>Songs you import</h2>
+  <p>A song file you choose (MusicXML or MIDI) is read and saved in this browser's storage on your device, so you can practice it later. It isn't uploaded. You can remove it from the song's page in the app.</p>
+
+  <h2>Diagnostics (only if you turn them on)</h2>
+  <p>If you open the app with <code>?diag=1</code> at the end of the address, for example when a tester is asked to help with a microphone problem, the page sends a short technical status every 2 seconds to the server it came from: whether the microphone is running, its name, the input level, the latest pitch reading and confidence, and whether the device is an iPhone or iPad. It never sends sound. Without <code>?diag=1</code>, none of this is sent.</p>
+
+  <h2>Hosting during testing</h2>
+  <p>While the app is in testing, it's delivered through Cloudflare. As with any website, the network handles your connection (for example your IP address) to deliver the pages; see Cloudflare's own privacy policy. The app's server doesn't log ordinary visits.</p>
+
+  <h2>Changes</h2>
+  <p>If this changes, for example if accounts or syncing between devices are added, this page will be updated first, and nothing new will be collected without asking you.</p>
+
+  <footer>SolfegeApp (working name) · early test version · <a href="../">Back to the app</a></footer>
+</div>
+</body>
+</html>

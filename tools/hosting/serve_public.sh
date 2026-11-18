@@ -18,9 +18,11 @@ if [ "${1:-}" != "--no-export" ]; then
   "$GODOT" --headless --path . --export-release "Web" build/public/index.html >"$LOGS/export.log" 2>&1
 fi
 
-# The user manual is a plain web page served next to the app at /manual/.
-mkdir -p build/public/manual
-cp -r site/manual/. build/public/manual/
+# Plain web pages served next to the app: /manual/, /privacy/.
+for page in manual privacy; do
+  mkdir -p "build/public/$page"
+  cp -r "site/$page/." "build/public/$page/"
+done
 
 bash "$ROOT/tools/hosting/stop_public.sh" >/dev/null 2>&1 || true
 
