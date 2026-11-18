@@ -27,6 +27,7 @@ signal feedback_changed(text: String)
 @export var folded_color := Color("7fd3ff", 0.35)
 @export var target_color := Color("ffd27a", 0.30)
 @export var target_border := Color("ffd27a", 0.75)
+@export var lyric_color := Color(1, 1, 1, 0.85)
 
 var key := MusicKey.new()
 var center_midi := 57.0
@@ -63,7 +64,7 @@ func clear() -> void:
 func set_targets(targets: Array, origin: float) -> void:
 	_targets.clear()
 	for t in targets:
-		var tt := {midi = t.midi, start = origin + t.start, duration = t.duration}
+		var tt := {midi = t.midi, start = origin + t.start, duration = t.duration, lyric = t.get("lyric", "")}
 		if t.has("midi_end"):
 			tt.midi_end = t.midi_end
 		_targets.append(tt)
@@ -226,6 +227,10 @@ func _draw() -> void:
 		if syl != "" and x1 - x0 > font_size:
 			draw_string(_font, Vector2(x0 + 8, y + font_size * 0.35), syl,
 					HORIZONTAL_ALIGNMENT_LEFT, -1, int(font_size * 0.8), Color(1, 1, 1, 0.9))
+		# The word sung on this note, just under its bar.
+		if t.lyric != "":
+			draw_string(_font, Vector2(x0 + 4, y + band_h + font_size * 0.9), t.lyric,
+					HORIZONTAL_ALIGNMENT_LEFT, maxf(x1 - x0, font_size * 3.0), int(font_size * 0.75), lyric_color)
 
 	# "Now" marker.
 	var now_x := size.x * now_fraction

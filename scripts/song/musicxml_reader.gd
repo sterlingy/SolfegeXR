@@ -83,7 +83,7 @@ static func parse(bytes: PackedByteArray) -> Song:
 				"note":
 					note = {chord = false, rest = false, step = "", alter = 0.0, octave = 4,
 						duration = 0.0, voice = "1", staff = "1", tie_start = false,
-						tie_stop = false, lyric = "", breath = false, grace = false}
+						tie_stop = false, lyric = "", syllabic = "", breath = false, grace = false}
 				"chord":
 					note.chord = true
 				"rest":
@@ -171,6 +171,9 @@ static func parse(bytes: PackedByteArray) -> Song:
 				"text":
 					if parent == "lyric" and not note.is_empty() and note.lyric == "":
 						note.lyric = text
+				"syllabic":
+					if parent == "lyric" and not note.is_empty() and note.syllabic == "":
+						note.syllabic = text
 	return song
 
 
@@ -198,6 +201,7 @@ static func _commit_note(song: Song, part: Song.Part, n: Dictionary, divisions: 
 	note.start = cursor
 	note.duration = beats
 	note.lyric = n.lyric
+	note.syllabic = n.syllabic
 	note.breath_after = n.breath
 	note.measure = measure
 	# Merge consecutive rests.

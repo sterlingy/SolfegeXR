@@ -176,8 +176,9 @@ static func _from_notes(a: SongAnalyzer.Result, c: Course, first: int, last: int
 		var n := a.notes[i]
 		if n.start > cursor + 1e-4:
 			e.notes.append({semis = null, beats = n.start - cursor})
-		e.notes.append({semis = n.midi + c.transpose - tonic, beats = n.duration})
+		e.notes.append({semis = n.midi + c.transpose - tonic, beats = n.duration, lyric = n.lyric_display()})
 		cursor = n.start + n.duration
+	e.lyrics = a.lyric_line(first, last)
 	e.song_id = a.song.title
 	e.fixed_base = tonic
 	return e

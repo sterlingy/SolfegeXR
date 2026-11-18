@@ -13,8 +13,12 @@ class AnalyzedNote:
 	var semitone := 0         ## 0..11 above the tonic
 	var chromatic := false
 	var lyric := ""
+	var syllabic := ""
 	var measure := 0
 	var phrase := 0
+
+	func lyric_display() -> String:
+		return Song.lyric_text(lyric, syllabic)
 
 
 class Result:
@@ -32,6 +36,19 @@ class Result:
 
 	func needs(skill: Skills.Id) -> bool:
 		return skills.has(skill)
+
+	func has_lyrics() -> bool:
+		for n in notes:
+			if n.lyric != "":
+				return true
+		return false
+
+	## The lyrics of notes first..last as one line ("" if none).
+	func lyric_line(first: int, last: int) -> String:
+		var parts := []
+		for i in range(first, last + 1):
+			parts.append(notes[i].lyric_display())
+		return Song.lyric_line(parts)
 
 	## Semitones to shift so the song sits in the learner's range [lo, hi].
 	## Centers the song; if it is wider than the voice, keeps the top reachable
@@ -85,6 +102,7 @@ static func analyze(song: Song, part: Song.Part = null) -> Result:
 		a.start = n.start
 		a.duration = n.duration
 		a.lyric = n.lyric
+		a.syllabic = n.syllabic
 		a.measure = n.measure
 		a.semitone = r.key.semitone_of(n.midi)
 		a.degree = r.key.degree_of(n.midi)

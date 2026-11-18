@@ -26,6 +26,7 @@ var accompaniment := false           ## chord pad under the melody (backing-trac
 var guide_fade := false              ## guide voice fades out (ensemble stage 4)
 var record := true                   ## counts toward skill progress (false for warm-ups)
 var song_id := ""                    ## set for song-derived drills
+var lyrics := ""                     ## the phrase's words, shown above the trace
 var parts: Array = []                ## ensemble: other parts as {name, targets} (already realized)
 ## Song drills store pitches relative to this MIDI base (already transposed
 ## into the learner's voice). -1 = relative to the learner's home tonic.
@@ -63,6 +64,8 @@ func realize(home_tonic: int, tempo_scale := 1.0) -> Array:
 		var dur: float = n.beats * spb
 		if n.semis != null:
 			var target := {midi = home_tonic + int(n.semis), start = t, duration = dur}
+			if n.get("lyric", "") != "":
+				target.lyric = n.lyric
 			if n.get("glide", false) and i + 1 < notes.size() and notes[i + 1].semis != null:
 				target.midi_end = home_tonic + int(notes[i + 1].semis)
 			out.append(target)

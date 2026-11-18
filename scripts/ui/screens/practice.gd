@@ -15,6 +15,7 @@ var _col: VBoxContainer
 var _heading: Label
 var _prompt: Label
 var _status: Label
+var _lyrics: Label
 var _trace: PitchTrace
 var _result: Label
 var _start_button: Button
@@ -48,6 +49,8 @@ func _build() -> void:
 
 	_heading = UI.title(_col, "", 56)
 	_prompt = UI.muted(_col, "")
+	_lyrics = UI.label(_col, "", 46)
+	_lyrics.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_status = UI.label(_col, "", 44, UI.WARM)
 	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var picker := MicPicker.new()
@@ -99,6 +102,8 @@ func _load_exercise() -> void:
 	App.profile.apply_to_key(e.key)
 	_heading.text = e.title
 	_prompt.text = e.prompt
+	_lyrics.text = "“%s”" % e.lyrics if e.lyrics != "" else ""
+	_lyrics.visible = e.lyrics != ""
 	_status.text = "%d of %d" % [_index + 1, _exercises.size()]
 	_result.text = ""
 	_start_button.text = "Start"

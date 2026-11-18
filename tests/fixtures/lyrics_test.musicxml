@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<score-partwise version="4.0">
+<work><work-title>Lyrics Test</work-title></work>
+<part-list><score-part id="P1"><part-name>Voice</part-name></score-part></part-list>
+<part id="P1">
+<measure number="1">
+<attributes><divisions>1</divisions><key><fifths>0</fifths><mode>major</mode></key><time><beats>4</beats><beat-type>4</beat-type></time></attributes>
+<note><pitch><step>C</step><octave>4</octave></pitch><duration>1</duration><voice>1</voice><lyric><syllabic>single</syllabic><text>Shall</text></lyric></note>
+<note><pitch><step>D</step><octave>4</octave></pitch><duration>1</duration><voice>1</voice><lyric><syllabic>single</syllabic><text>we</text></lyric></note>
+<note><pitch><step>E</step><octave>4</octave></pitch><duration>1</duration><voice>1</voice><lyric><syllabic>begin</syllabic><text>ga</text></lyric></note>
+<note><pitch><step>F</step><octave>4</octave></pitch><duration>1</duration><voice>1</voice><lyric><syllabic>middle</syllabic><text>ther</text></lyric></note>
+</measure>
+<measure number="2">
+<note><pitch><step>G</step><octave>4</octave></pitch><duration>2</duration><voice>1</voice><lyric><syllabic>end</syllabic><text>ing</text></lyric><notations><articulations><breath-mark/></articulations></notations></note>
+<note><rest/><duration>2</duration><voice>1</voice></note>
+</measure>
+<measure number="3">
+<note><pitch><step>E</step><octave>4</octave></pitch><duration>2</duration><voice>1</voice><lyric><syllabic>single</syllabic><text>at</text></lyric></note>
+<note><pitch><step>C</step><octave>4</octave></pitch><duration>2</duration><voice>1</voice><lyric><syllabic>single</syllabic><text>home</text></lyric></note>
+</measure>
+</part>
+</score-partwise>

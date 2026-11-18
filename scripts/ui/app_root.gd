@@ -33,6 +33,16 @@ func _ready() -> void:
 		App.go("home", {}, false)
 		App.go("practice", {exercises = Curriculum.exercises_for(skill, 0), index = index,
 			title = Skills.display_name(skill)})
+	elif screen.begins_with("course-step:"):
+		# course-step:<song_id>:<step index or title> opens one step of a song's course.
+		var cs := screen.split(":")
+		var c := CourseBuilder.build(App.song_analysis(cs[1]), App.profile)
+		App.go("home", {}, false)
+		var idx := cs[2].to_int()
+		for k in c.steps.size():
+			if c.steps[k].title == cs[2]:
+				idx = k
+		App.go("practice", {exercises = c.steps, index = idx, title = c.song.song.title})
 	elif screen.begins_with("course:"):
 		App.go("home", {}, false)
 		App.go("course", {song_id = screen.trim_prefix("course:")})

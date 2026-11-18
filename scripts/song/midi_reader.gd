@@ -41,6 +41,7 @@ static func parse(b: PackedByteArray) -> Song:
 		var track_name := ""
 		var open := {}        # key: channel*128+note -> start tick
 		var events := []      # [start_tick, end_tick, note, channel]
+		var lyrics := {}      # tick -> text (meta 0x05)
 		while i < end:
 			var vlq := _vlq(b, i)
 			tick += vlq[0]
@@ -58,6 +59,10 @@ static func parse(b: PackedByteArray) -> Song:
 				match meta:
 					0x03:
 						track_name = data.get_string_from_utf8()
+					0x05:
+						var text := data.get_string_from_utf8().strip_edges()
+						if text != "":
+							lyrics[tick] = text
 					0x51:
 						if not tempo_set and data.size() == 3:
 							var us := (data[0] << 16) | (data[1] << 8) | data[2]
@@ -110,13 +115,13 @@ static func parse(b: PackedByteArray) -> Song:
 				by_channel[key] = []
 			by_channel[key].append(e)
 		for key in by_channel:
-			var part := _events_to_part(by_channel[key], tpq, song.beats_per_measure)
+			var part := _events_to_part(by_channel[key], tpq, song.beats_per_measure, lyrics)
 			part.name = track_name if track_name != "" else "Part %d" % (song.parts.size() + 1)
 			song.parts.append(part)
 	return song
 
 
-static func _events_to_part(events: Array, tpq: float, beats_per_measure: float) -> Song.Part:
+static func _events_to_part(events: Array, tpq: float, beats_per_measure: float, lyrics := {}) -> Song.Part:
 	events.sort_custom(func(a, b): return a[0] < b[0] or (a[0] == b[0] and a[2] > b[2]))
 	var part := Song.Part.new()
 	var cursor := 0.0
@@ -136,6 +141,11 @@ static func _events_to_part(events: Array, tpq: float, beats_per_measure: float)
 		n.start = start
 		n.duration = end - start
 		n.measure = int(start / beats_per_measure)
+		if lyrics.has(e[0]):
+			# Karaoke-style MIDI: a trailing "-" means the word continues.
+			var text: String = lyrics[e[0]]
+			n.lyric = text.trim_suffix("-")
+			n.syllabic = "begin" if text.ends_with("-") else "single"
 		part.notes.append(n)
 		cursor = end
 	return part
