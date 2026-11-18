@@ -2,7 +2,7 @@ extends Control
 ## Root of the app: hosts the screens (see App.go) and handles dev arguments:
 ##   -- --profile=user://dev.json   use a separate save file
 ##   -- --demo                      demo singer instead of the mic
-##   -- --screen=home|practice|...  open a screen directly (practice: core lesson)
+##   -- --screen=home|practice-core|practice:PITCH_MATCH:2|course:<id>|...  open a screen directly
 ##   -- --autostart                 practice screens start right away
 ##   -- --screenshot=path.png       save a screenshot after --wait seconds, then quit
 ##   -- --wait=4
@@ -25,9 +25,14 @@ func _ready() -> void:
 			shot = a.trim_prefix("--screenshot=")
 		elif a.begins_with("--wait="):
 			wait = a.trim_prefix("--wait=").to_float()
-	if screen == "practice-core":
+	if screen == "practice-core" or screen.begins_with("practice:"):
+		# practice:PITCH_MATCH[:index] opens a core lesson (default: Steps).
+		var bits := screen.split(":")
+		var skill: Skills.Id = Skills.Id.get(bits[1], Skills.Id.STEPS) if bits.size() > 1 else Skills.Id.STEPS
+		var index := bits[2].to_int() if bits.size() > 2 else 0
 		App.go("home", {}, false)
-		App.go("practice", {exercises = Curriculum.exercises_for(Skills.Id.STEPS, 0), title = "Steps"})
+		App.go("practice", {exercises = Curriculum.exercises_for(skill, 0), index = index,
+			title = Skills.display_name(skill)})
 	elif screen.begins_with("course:"):
 		App.go("home", {}, false)
 		App.go("course", {song_id = screen.trim_prefix("course:")})

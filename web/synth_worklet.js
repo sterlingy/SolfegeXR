@@ -4,7 +4,8 @@
 // The GDScript side still decides WHAT to play (notes, drone, cadences) and
 // sends each note here; this renders it. Keep the two in sync.
 //
-// Messages in:  {type:"note", v:{kind, hz, gain, at, dur, attack, release, saw_mix, cutoff}}
+// Messages in:  {type:"note", v:{kind, hz, hz_end, gain, at, dur, attack, release, saw_mix, cutoff}}
+//               (hz_end: the voice glides log-linearly from hz to hz_end over dur)
 //               {type:"stop", kind}   release all voices of a kind
 //               {type:"release"}      release everything
 // Messages out: {type:"level", peak, voices} about every 250 ms (diagnostics)
@@ -84,6 +85,9 @@ class SolfegeSynthProcessor extends AudioWorkletProcessor {
     if (v.releasedAt >= 0 && (end < 0 || v.releasedAt < end)) end = v.releasedAt;
     let phase = v.phase, vib = v.vibPhase, lp = v.lp;
     let dt = v.hz / sampleRate;
+    const hzEnd = v.hz_end || v.hz;
+    const glide = hzEnd !== v.hz;
+    const durS = Math.max(1, v.dur * sampleRate);
     const first = Math.max(0, v.start - now);
     for (let i = first; i < n; i++) {
       const s = now + i;
@@ -96,7 +100,8 @@ class SolfegeSynthProcessor extends AudioWorkletProcessor {
       if (isVoice && (i & 15) === 0) {
         const depth = Math.min(1, Math.max(0, (age / sampleRate - VIBRATO_DELAY) / 0.3));
         vib += 16 * VIBRATO_HZ / sampleRate;
-        dt = v.hz / sampleRate * Math.pow(2, depth * VIBRATO_CENTS / 1200 * Math.sin(2 * Math.PI * vib));
+        const base = glide ? v.hz * Math.pow(hzEnd / v.hz, Math.min(1, Math.max(0, age / durS))) : v.hz;
+        dt = base / sampleRate * Math.pow(2, depth * VIBRATO_CENTS / 1200 * Math.sin(2 * Math.PI * vib));
       }
       phase += dt;
       if (phase >= 1) phase -= 1;

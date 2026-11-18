@@ -116,7 +116,12 @@ func _follow_frame(t: float) -> PitchFrame:
 	for i in _targets.size():
 		var n: Dictionary = _targets[i]
 		if rel >= n.start and rel < n.start + n.duration - 0.03:
-			return _voiced(t, n.midi + _note_offsets.get(i, 0.0) + _human(rel - n.start))
+			var local: float = rel - n.start
+			var midi: float = n.midi
+			if n.has("midi_end"):
+				midi = lerpf(n.midi, n.midi_end, local / n.duration)
+				return _voiced(t, midi + _note_offsets.get(i, 0.0) + 0.2 * sin(TAU * 5.5 * local))
+			return _voiced(t, midi + _note_offsets.get(i, 0.0) + _human(local))
 	return PitchFrame.new(t, 0.0, 0.1, 0.001)
 
 

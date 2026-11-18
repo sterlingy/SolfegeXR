@@ -63,7 +63,10 @@ func clear() -> void:
 func set_targets(targets: Array, origin: float) -> void:
 	_targets.clear()
 	for t in targets:
-		_targets.append({midi = t.midi, start = origin + t.start, duration = t.duration})
+		var tt := {midi = t.midi, start = origin + t.start, duration = t.duration}
+		if t.has("midi_end"):
+			tt.midi_end = t.midi_end
+		_targets.append(tt)
 	queue_redraw()
 
 
@@ -207,6 +210,15 @@ func _draw() -> void:
 		if x1 < 0.0 or x0 > size.x:
 			continue
 		var y := _y_of(t.midi)
+		if t.has("midi_end"):
+			# A glide: a sloped band from this pitch to the next.
+			var y1 := _y_of(t.midi_end)
+			var band := PackedVector2Array([Vector2(x0, y - band_h), Vector2(x1, y1 - band_h),
+				Vector2(x1, y1 + band_h), Vector2(x0, y + band_h)])
+			draw_colored_polygon(band, target_color)
+			band.append(band[0])
+			draw_polyline(band, target_border, 2.0, true)
+			continue
 		var r := Rect2(x0, y - band_h, maxf(4.0, x1 - x0 - 4.0), band_h * 2.0)
 		draw_rect(r, target_color)
 		draw_rect(r, target_border, false, 2.0)

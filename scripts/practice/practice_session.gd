@@ -20,8 +20,9 @@ var profile: LearnerProfile
 var tempo_scale := 1.0
 var play_cadence := true
 var phase := Phase.IDLE
-var targets: Array = []         ## relative seconds, in the learner's voice
-var scorer: PhraseScorer
+var targets: Array = []         ## what's scored and drawn (relative seconds, learner's voice)
+var reference: Array = []       ## what the synth plays as the example
+var scorer: RefCounted          ## PhraseScorer (notes) or SlideScorer (sirens and slides)
 var results: Array[NoteResult] = []
 var sing_origin_source := 0.0   ## pitch-source time when SING started
 
@@ -34,7 +35,15 @@ func _init(p_exercise: Exercise, p_profile: LearnerProfile, p_tempo_scale := -1.
 	exercise = p_exercise
 	profile = p_profile
 	tempo_scale = p_tempo_scale if p_tempo_scale > 0.0 else profile.tempo_scale
-	targets = exercise.realize_for(profile, tempo_scale)
+	reference = exercise.realize_for(profile, tempo_scale)
+	match exercise.mode:
+		Exercise.Mode.SIREN:
+			targets = []  # free sliding: nothing to aim at
+		Exercise.Mode.SLIDE_TO:
+			# One target held for the whole singing window.
+			targets = [{midi = reference[0].midi, start = 0.0, duration = exercise.sing_seconds}]
+		_:
+			targets = reference
 
 
 func home_tonic() -> int:
@@ -48,6 +57,8 @@ func drone_tonic() -> int:
 
 
 func length_seconds() -> float:
+	if exercise.mode in [Exercise.Mode.SIREN, Exercise.Mode.SLIDE_TO]:
+		return exercise.sing_seconds
 	var end := 0.0
 	for t in targets:
 		end = maxf(end, t.start + t.duration)
@@ -107,7 +118,7 @@ func speakers_only() -> bool:
 
 func _after_cadence() -> void:
 	if exercise.reference == Exercise.Reference.BEFORE 			or (exercise.reference == Exercise.Reference.ALONG and speakers_only()):
-		var len := _engine.sequence(targets, 1.0, _engine.time() + 0.1)
+		var len := _engine.sequence(reference, 1.0, _engine.time() + 0.1)
 		_enter(Phase.LISTEN, len + 0.3)
 	else:
 		_enter(Phase.COUNT_IN, COUNT_IN_SECONDS)
@@ -116,7 +127,10 @@ func _after_cadence() -> void:
 func _begin_sing(source_now: float) -> void:
 	sing_origin_source = source_now
 	_sing_start_engine = _engine.time()
-	scorer = PhraseScorer.new(targets, exercise.key, profile.scoring_settings())
+	if exercise.mode == Exercise.Mode.NOTES:
+		scorer = PhraseScorer.new(targets, exercise.key, profile.scoring_settings())
+	else:
+		scorer = SlideScorer.new(exercise.mode, targets, profile.scoring_settings())
 	scorer.latency = 0.0
 	if speakers_only():
 		_engine.set_drone(-1)
@@ -196,6 +210,8 @@ static func summary(res: Array[NoteResult], key: MusicKey) -> String:
 			landed += 1
 		elif first_miss == null and r.verdict != NoteScorer.Verdict.NO_VOICE:
 			first_miss = r
+	if res.size() == 1 and res[0].custom_feedback != "":
+		return res[0].custom_feedback
 	if voiced == 0:
 		return "I didn't hear you that time. Try again a little louder."
 	if landed == res.size():

@@ -33,11 +33,15 @@ func time() -> float:
 
 ## Schedule a note. `at` is absolute engine time in seconds (use time() + delay).
 ## duration < 0 means "until release_all/stop_kind".
-func note(midi: float, at: float, duration: float, kind := Kind.VOICE, gain := 0.3) -> void:
+func note(midi: float, at: float, duration: float, kind := Kind.VOICE, gain := 0.3,
+		midi_end := NAN) -> void:
 	var hz := MusicKey.midi_to_hz(midi)
+	var hz_end := hz if is_nan(midi_end) else MusicKey.midi_to_hz(midi_end)
 	var v := {
 		kind = kind,
 		hz = hz,
+		hz_end = hz_end,     ## glides log-linearly from hz to hz_end over the note
+		dur = duration,
 		gain = gain,
 		start = int(at * rate),
 		end = int((at + duration) * rate) if duration >= 0.0 else -1,
@@ -51,7 +55,7 @@ func note(midi: float, at: float, duration: float, kind := Kind.VOICE, gain := 0
 		released_at = -1,
 	}
 	if sink:
-		sink.note({kind = kind, hz = hz, gain = gain, at = at, dur = duration,
+		sink.note({kind = kind, hz = hz, hz_end = hz_end, gain = gain, at = at, dur = duration,
 			attack = v.attack, release = v.release, saw_mix = v.saw_mix, cutoff = v.cutoff})
 		return
 	_voices.append(v)
@@ -103,7 +107,11 @@ func sequence(notes: Array, tempo := 1.0, at := -1.0) -> float:
 	for n in notes:
 		var s: float = n.start / tempo
 		var d: float = n.duration / tempo
-		note(n.midi, at + s, d * 0.97)
+		# Glides run their full length so they join the next note smoothly.
+		if n.has("midi_end"):
+			note(n.midi, at + s, d, Kind.VOICE, 0.3, n.midi_end)
+		else:
+			note(n.midi, at + s, d * 0.97)
 		length = maxf(length, s + d)
 	return length
 
@@ -154,6 +162,9 @@ func _render_voice(v: Dictionary, out: PackedFloat32Array, count: int) -> bool:
 	if start >= _now + count:
 		return false
 	var hz: float = v.hz
+	var hz_end: float = v.hz_end
+	var glide: bool = hz_end != hz
+	var dur_s: float = maxf(1.0, v.dur * rate)
 	var attack_s: float = v.attack * rate
 	var release_s: float = v.release * rate
 	var lp_a := 1.0 - exp(-TAU * v.cutoff / rate)
@@ -178,11 +189,14 @@ func _render_voice(v: Dictionary, out: PackedFloat32Array, count: int) -> bool:
 			if env <= 0.0:
 				v.phase = phase
 				return true
-		# Vibrato updated every 16 samples (0.33 ms): inaudible, much cheaper.
+		# Vibrato (and glide) updated every 16 samples (0.33 ms): inaudible, much cheaper.
 		if is_voice and (i & 15) == 0:
 			var depth := clampf((age / rate - VOICE_VIBRATO_DELAY) / 0.3, 0.0, 1.0)
 			vib_phase += 16.0 * VOICE_VIBRATO_HZ / rate
-			dt = hz / rate * pow(2.0, depth * VOICE_VIBRATO_CENTS / 1200.0 * sin(TAU * vib_phase))
+			var base := hz
+			if glide:
+				base = hz * pow(hz_end / hz, clampf(age / dur_s, 0.0, 1.0))
+			dt = base / rate * pow(2.0, depth * VOICE_VIBRATO_CENTS / 1200.0 * sin(TAU * vib_phase))
 		phase += dt
 		if phase >= 1.0:
 			phase -= 1.0

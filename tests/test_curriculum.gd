@@ -87,7 +87,7 @@ func test_exercise_degrees_and_home_tonic() -> void:
 	var p := LearnerProfile.new()
 	p.voice_low = 48  # C3
 	p.voice_high = 65  # F4
-	var ex := Curriculum.exercises_for(S.PITCH_MATCH, 0)[3]  # sol below
+	var ex := Curriculum.exercises_for(S.PITCH_MATCH, 0)[7]  # sol below
 	var t := ex.realize_for(p, 1.0)
 	var home := p.home_tonic(0)
 	assert_eq(posmod(home, 12), 0, "home tonic is a C")

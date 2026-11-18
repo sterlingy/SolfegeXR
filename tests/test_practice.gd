@@ -69,7 +69,7 @@ func test_slow_tempo_doubles_length() -> void:
 
 func test_warmup_not_recorded() -> void:
 	var profile := LearnerProfile.new()
-	var ex := Curriculum.exercises_for(Skills.Id.PITCH_MATCH, 0)[0]
+	var ex := Curriculum.exercises_for(Skills.Id.PITCH_MATCH, 0)[4]  # Find do
 	ex.record = false
 	var fake := FakePitchSource.new()
 	fake.miss_chance = 0.0

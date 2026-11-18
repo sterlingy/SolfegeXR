@@ -108,13 +108,16 @@ func _load_exercise() -> void:
 	_trace.history_seconds = 1.8
 	_trace.clear()
 	var preview := PracticeSession.new(e, App.profile, _tempo)
-	var lo := 999
-	var hi := -999
-	for n in preview.targets:
-		lo = mini(lo, n.midi)
-		hi = maxi(hi, n.midi)
-	_trace.fit_range(lo - 2, hi + 2)
-	_trace.set_targets(preview.targets, App.pitch_source().now() + 1.0)
+	if e.mode == Exercise.Mode.SIREN:
+		_trace.fit_range(App.profile.voice_low, App.profile.voice_high)
+	else:
+		var lo := 999
+		var hi := -999
+		for n in preview.reference + preview.targets:
+			lo = mini(lo, mini(n.midi, n.get("midi_end", n.midi)))
+			hi = maxi(hi, maxi(n.midi, n.get("midi_end", n.midi)))
+		_trace.fit_range(lo - 2, hi + 2)
+	_trace.set_targets(preview.reference, App.pitch_source().now() + 1.0)
 
 
 func _set_tempo(t: float) -> void:
@@ -159,15 +162,19 @@ func _on_phase(phase: PracticeSession.Phase) -> void:
 			_status.text = "Listen: this is home."
 		P.LISTEN:
 			_status.text = "Listen…"
-			_trace.set_targets(_session.targets, App.pitch_source().now() + 0.1)
+			_trace.set_targets(_session.reference, App.pitch_source().now() + 0.1)
 		P.COUNT_IN:
 			_status.text = "Your turn…"
 		P.SING:
-			_status.text = "Sing!"
+			_status.text = {Exercise.Mode.SIREN: "Slide up and down!", Exercise.Mode.SLIDE_TO: "Slide to the note, then hold it!",
+				Exercise.Mode.FOLLOW: "Follow the slide!"}.get(_exercise().mode, "Sing!")
 			_trace.set_targets(_session.targets, _session.sing_origin_source)
 			var fake := App.fake_singer()
 			if fake:
-				fake.follow(_session.targets, _session.sing_origin_source)
+				if _exercise().mode == Exercise.Mode.SIREN:
+					fake.siren(App.profile.voice_low + 2, App.profile.voice_high - 3)
+				else:
+					fake.follow(_session.targets, _session.sing_origin_source)
 
 
 func _on_finished(results: Array[NoteResult]) -> void:

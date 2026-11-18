@@ -11,6 +11,7 @@ var octave_offset := 0            ## -1 = sang an octave below, etc. (range hint
 var onset_seconds := -1.0         ## time to first land in tolerance, -1 = never
 var drift_cents_per_second := 0.0
 var sung_midi := -1               ## for WRONG_DEGREE: the note actually sung
+var custom_feedback := ""         ## set by scorers with their own wording (slides, sirens)
 
 
 func landed() -> bool:
@@ -19,6 +20,8 @@ func landed() -> bool:
 
 ## Encouraging, specific feedback. Never "wrong" or "bad".
 func feedback(key: MusicKey = null) -> String:
+	if custom_feedback != "":
+		return custom_feedback
 	var V := NoteScorer.Verdict
 	var text := ""
 	match verdict:
