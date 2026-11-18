@@ -21,6 +21,8 @@ bash tools/hosting/stop_public.sh                # take it offline
 
 The public address is printed and saved to `build/public_url.txt`. Logs are in `build/hosting/`.
 
+The **user manual** (`site/manual/index.html`) is served next to the app at `<address>/manual/`. `serve_public.sh` copies it into `build/public`, and the app links to it from the home screen and Settings.
+
 **To update testers to a new build** while the tunnel is running, re-export to the same folder; the address stays the same:
 ```
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --export-release "Web" build/public/index.html

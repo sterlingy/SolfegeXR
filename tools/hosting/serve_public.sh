@@ -17,6 +17,10 @@ if [ "${1:-}" != "--no-export" ]; then
   "$GODOT" --headless --path . --export-release "Web" build/public/index.html >"$LOGS/export.log" 2>&1
 fi
 
+# The user manual is a plain web page served next to the app at /manual/.
+mkdir -p build/public/manual
+cp -r site/manual/. build/public/manual/
+
 bash "$ROOT/tools/hosting/stop_public.sh" >/dev/null 2>&1 || true
 
 echo "Starting web server on 127.0.0.1:8090..."

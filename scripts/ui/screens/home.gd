@@ -31,6 +31,9 @@ func setup(_args: Dictionary) -> void:
 		var title: String = s.title
 		UI.button(col, title, func(): App.go("course", {song_id = s.id}))
 
+	var help := UI.flat_button("How to use this app ›", func(): App.open_manual())
+	col.add_child(help)
+
 
 
 func _start_core(skill: Skills.Id) -> void:

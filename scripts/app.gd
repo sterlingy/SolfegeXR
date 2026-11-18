@@ -81,6 +81,14 @@ func ensure_listening() -> void:
 		s.start()
 
 
+## Open the user manual (served next to the app at manual/).
+func open_manual() -> void:
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("window.open(new URL('manual/', location.href).href, '_blank')", true)
+	else:
+		OS.shell_open(ProjectSettings.globalize_path("res://site/manual/index.html"))
+
+
 ## Choose a microphone; remembered in the profile.
 func select_mic(id: String) -> void:
 	if id == "demo":

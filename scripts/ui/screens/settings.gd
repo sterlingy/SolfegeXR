@@ -44,6 +44,10 @@ func setup(_args: Dictionary) -> void:
 		UI.toggle(dev, "Demo singer instead of microphone", App.use_demo_singer,
 			func(on): App.use_demo_singer = on)
 
+	var help := UI.card(col)
+	UI.label(help, "Help", 40)
+	UI.button(help, "User manual", func(): App.open_manual())
+
 	var data := UI.card(col)
 	UI.label(data, "Your data", 40)
 	UI.muted(data, "Progress is saved only on this device.")
