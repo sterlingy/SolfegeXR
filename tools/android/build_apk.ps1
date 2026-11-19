@@ -30,9 +30,14 @@ if (Test-Path $settings) {
 New-Item -ItemType Directory -Force -Path (Join-Path $project 'build\android') | Out-Null
 Write-Host ''
 Write-Host 'Building the Android XR APK (first time: several minutes)...' -ForegroundColor Cyan
+# Godot prints warnings to stderr; Windows PowerShell 5.1 would treat those as
+# fatal under 'Stop', so relax it for this call (the APK check below decides).
+$ErrorActionPreference = 'Continue'
 & $godot --headless --path $project --export-debug 'Android XR' 'build/android/SolfegeXR.apk' 2>&1 |
+    ForEach-Object { "$_" } |
     Tee-Object -FilePath (Join-Path $project 'build\android\export.log') |
     Where-Object { $_ -match 'BUILD|FAIL|error:|What went wrong|Downloading|apk' }
+$ErrorActionPreference = 'Stop'
 
 $apk = Join-Path $project 'build\android\SolfegeXR.apk'
 Write-Host ''
