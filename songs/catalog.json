@@ -70,6 +70,13 @@
     "note": "Wide range; the graduation song."
   },
   {
+    "id": "12_god_rest_you_merry",
+    "title": "God Rest You Merry, Gentlemen",
+    "file": "res://songs/12_god_rest_you_merry.musicxml",
+    "confidence": "low",
+    "note": "E minor; a second minor-key song. Refrain (\"O tidings of comfort and joy\") especially uncertain."
+  },
+  {
     "id": "11_carol_of_the_bells",
     "title": "Shchedryk (Carol of the Bells), layered",
     "file": "res://songs/11_carol_of_the_bells.musicxml",

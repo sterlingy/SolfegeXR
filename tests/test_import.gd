@@ -13,6 +13,7 @@ const EXPECTED_KEYS := {
 	"09_shenandoah": [2, MusicKey.Mode.IONIAN],
 	"10_danny_boy": [0, MusicKey.Mode.IONIAN],
 	"11_carol_of_the_bells": [7, MusicKey.Mode.AEOLIAN],
+	"12_god_rest_you_merry": [4, MusicKey.Mode.AEOLIAN],
 }
 var S := Skills.Id
 
@@ -23,7 +24,7 @@ func _load(id: String) -> Song:
 
 func test_catalog_songs_parse_with_expected_keys() -> void:
 	var catalog: Array = JSON.parse_string(FileAccess.get_file_as_string("res://songs/catalog.json"))
-	assert_eq(catalog.size(), 11)
+	assert_eq(catalog.size(), 12)
 	for entry in catalog:
 		var song := MusicXmlReader.load_file(entry.file)
 		assert_true(song != null, "parse " + entry.id)

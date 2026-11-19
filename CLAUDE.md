@@ -27,7 +27,7 @@ Core (fixed order): pitch matching → sustained notes → steps → small leaps
 
 Ensemble stages: solo + drone → chords only → unison guide → fading guide → second harmony line → multiple parts (Carol of the Bells finale) → later real people. **Headphones required** for backing/ensemble in v1.
 
-Curated songs in order: Ode to Joy, When the Saints, She'll Be Coming 'Round the Mountain, Oh! Susanna (later standard verses), Auld Lang Syne, Amazing Grace, Drunken Sailor, Take Me Out to the Ball Game (1908), Shenandoah, Danny Boy, Carol of the Bells (full layered, Wilhousky lyrics). Rejected: Jingle Bells, Happy Birthday, Row Row Row Your Boat.
+Curated songs in order: Ode to Joy, When the Saints, She'll Be Coming 'Round the Mountain, Oh! Susanna (later standard verses), Auld Lang Syne, Amazing Grace, Drunken Sailor, Take Me Out to the Ball Game (1908), Shenandoah, Danny Boy, God Rest You Merry Gentlemen, Carol of the Bells (full layered, Wilhousky lyrics). Rejected: Jingle Bells, Happy Birthday, Row Row Row Your Boat.
 
 ## Sheet music import
 MVP: MusicXML (Godot `XMLParser`) and MIDI (small custom parser). Later: photo OMR, always user-corrected. Pipeline: parse → key/mode detection → scale degrees + chromatic flags → range & transpose → phrase split (rests, breath marks, lyric lines) → skill tags → course.

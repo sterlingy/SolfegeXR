@@ -6,7 +6,8 @@ extends RefCounted
 const SONG_ORDER := [
 	"01_ode_to_joy", "02_when_the_saints", "03_coming_round_the_mountain", "04_oh_susanna",
 	"05_auld_lang_syne", "06_amazing_grace", "07_drunken_sailor",
-	"08_take_me_out_to_the_ball_game", "09_shenandoah", "10_danny_boy", "11_carol_of_the_bells",
+	"08_take_me_out_to_the_ball_game", "09_shenandoah", "10_danny_boy",
+	"12_god_rest_you_merry", "11_carol_of_the_bells",
 ]
 
 
