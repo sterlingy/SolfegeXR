@@ -76,7 +76,7 @@ var _scrolling := false         ## this pinch moved far enough to be a scroll
 var _press_owner: Variant = null  ## what holds the current press: a controller, "mouse" or "select"
 var _pinch := {}                ## controller -> [down, seconds open]
 var _history: Array = []        ## recent pointer states: [time, hover, panel pos, screen]
-var _pinch_source := ""         ## "browser" or "joints", for diagnostics
+var _pinch_source := {}         ## hand -> "browser" or "joints", for diagnostics
 var _web: WebXRInterface
 var _active_source := -1
 var _active_ctrl: XRController3D  ## the hand/controller that pinched last
@@ -954,11 +954,12 @@ func _step_pinch(c: XRController3D, value: float, tracked: bool, delta: float) -
 func _pinch_value(c: XRController3D) -> float:
 	if not c.get_is_active():
 		return 0.0
-	var browser := XRMode.select_state(c.tracker.trim_suffix("_hand"))
+	var hand := c.tracker.trim_suffix("_hand")
+	var browser := XRMode.select_state(hand)
 	var source := "browser" if browser >= 0 else "joints"
-	if source != _pinch_source:
-		_pinch_source = source
-		XRMode.diag("pinch source: %s" % source)
+	if source != _pinch_source.get(hand, ""):
+		_pinch_source[hand] = source
+		XRMode.diag("pinch source (%s): %s" % [hand, source])
 	if browser >= 0:
 		return float(browser)
 	return c.get_float("trigger")

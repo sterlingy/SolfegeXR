@@ -49,7 +49,7 @@ func note(midi: float, at: float, duration: float, kind := Kind.VOICE, gain := 0
 		vib_phase = 0.0,
 		lp = 0.0,
 		attack = {Kind.VOICE: 0.04, Kind.CLICK: 0.001}.get(kind, 0.3),
-		release = {Kind.VOICE: 0.08, Kind.CLICK: 0.03}.get(kind, 0.4),
+		release = {Kind.VOICE: 0.08, Kind.CLICK: 0.05}.get(kind, 0.4),
 		saw_mix = {Kind.VOICE: 0.3, Kind.DRONE: 0.6, Kind.CLICK: 0.0}.get(kind, 0.15),
 		cutoff = minf(hz * 4.0, 3000.0) if kind == Kind.VOICE else {Kind.DRONE: 700.0, Kind.CLICK: 8000.0}.get(kind, 1800.0),
 		released_at = -1,

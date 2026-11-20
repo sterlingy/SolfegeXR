@@ -147,10 +147,29 @@ func beat_times(from: float) -> Array:
 ## Metronome ticks from the start of the countdown to the last note: a higher
 ## tick on the first beat of each bar. Short and unpitched to the detector
 ## (far above any voice), so they are allowed without headphones too.
-func _schedule_clicks(downbeat: float) -> void:
-	for b in beat_times(-count_in_seconds() + 0.05):
+func _schedule_clicks(downbeat: float, from: float) -> void:
+	for b in beat_times(from):
 		var accent: bool = b[1]
-		_engine.note(96 if accent else 91, downbeat + b[0], 0.012, SynthEngine.Kind.CLICK, 0.22 if accent else 0.15)
+		_engine.note(96 if accent else 91, downbeat + b[0], 0.015, SynthEngine.Kind.CLICK, 0.7 if accent else 0.5)
+
+
+## Has a beat to click: melodies (sirens and slides have none).
+func has_beat() -> bool:
+	return exercise.mode == Exercise.Mode.NOTES
+
+
+## Turn the metronome on or off, mid-exercise too.
+func set_metronome(on: bool) -> void:
+	if on == metronome:
+		return
+	metronome = on
+	if _engine == null or not has_beat() or phase not in [Phase.COUNT_IN, Phase.SING]:
+		return
+	if not on:
+		_engine.stop_kind(SynthEngine.Kind.CLICK)
+		return
+	var downbeat := _phase_end if phase == Phase.COUNT_IN else _sing_start_engine
+	_schedule_clicks(downbeat, _engine.time() - downbeat + 0.05)
 
 
 ## Seconds since SING began (source clock), for drawing targets.
@@ -262,8 +281,8 @@ func _enter(p: Phase, seconds: float) -> void:
 		_engine.set_drone(-1)
 	phase = p
 	_phase_end = _engine.time() + seconds
-	if p == Phase.COUNT_IN and metronome and exercise.mode == Exercise.Mode.NOTES:
-		_schedule_clicks(_phase_end)
+	if p == Phase.COUNT_IN and metronome and has_beat():
+		_schedule_clicks(_phase_end, -count_in_seconds() + 0.05)
 	phase_changed.emit(p)
 
 

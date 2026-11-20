@@ -215,10 +215,32 @@ func test_no_ticks_without_the_metronome() -> void:
 func test_metronome_ticks_are_ignored_by_the_detector() -> void:
 	var engine := SynthEngine.new(48000.0)
 	for i in 8:
-		engine.note(96 if i % 4 == 0 else 91, 0.05 + i * 0.25, 0.012, SynthEngine.Kind.CLICK, 0.22)
+		engine.note(96 if i % 4 == 0 else 91, 0.05 + i * 0.25, 0.015, SynthEngine.Kind.CLICK, 0.7)
 	var audio := engine.render(48000 * 2)
 	var voiced := 0
 	for f in YinDetector.analyze(audio, 48000.0):
 		if f.confidence >= 0.6 and f.frequency > 0.0:
 			voiced += 1
 	assert_true(voiced <= 2, "ticks read as pitch in %d frames" % voiced)
+
+
+func test_metronome_can_be_turned_on_mid_song() -> void:
+	var profile := LearnerProfile.new()
+	var ex := Curriculum.exercises_for(Skills.Id.STEPS, 0)[0]
+	var engine := SynthEngine.new(48000.0)
+	var s := PracticeSession.new(ex, profile, 1.0)
+	s.play_cadence = false
+	s.start(engine)
+	var guard := 0
+	while s.phase != PracticeSession.Phase.SING and guard < 4000:
+		engine.render(800)
+		s.update([] as Array[PitchFrame], engine.time())
+		guard += 1
+	s.set_metronome(true)
+	var ticks := engine._voices.filter(func(v): return v.kind == SynthEngine.Kind.CLICK)
+	assert_true(ticks.size() > 0, "ticks scheduled for the rest of the song")
+	for v in ticks:
+		assert_true(v.start / engine.rate >= engine.time(), "none in the past")
+	s.set_metronome(false)
+	engine.render(4800)
+	assert_eq(engine._voices.filter(func(v): return v.kind == SynthEngine.Kind.CLICK and v.start / engine.rate < engine.time()).size(), 0, "silenced")

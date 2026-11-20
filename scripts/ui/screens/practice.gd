@@ -100,6 +100,8 @@ func _build() -> void:
 	_metronome.toggled.connect(func(on: bool):
 		App.profile.metronome = on
 		App.profile.save()
+		if _session:
+			_session.set_metronome(on)
 		_label_metronome())
 	_col.add_child(_metronome)
 	_label_metronome()
@@ -131,6 +133,8 @@ func _load_exercise() -> void:
 	_start_button.text = "Start"
 	_next_button.visible = _index < _exercises.size() - 1
 	_trace.set_key(e.key)
+	# Sirens and slides have no beat to click.
+	_metronome.visible = e.mode == Exercise.Mode.NOTES
 	_trace.now_fraction = 0.3
 	_trace.history_seconds = 1.8
 	_trace.clear()
