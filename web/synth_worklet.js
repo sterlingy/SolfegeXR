@@ -11,6 +11,7 @@
 // Messages out: {type:"level", peak, voices} about every 250 ms (diagnostics)
 
 const VOICE = 0;
+const CLICK = 3;  // SynthEngine.Kind.CLICK
 const VIBRATO_HZ = 5.2;
 const VIBRATO_CENTS = 12.0;
 const VIBRATO_DELAY = 0.25;
@@ -81,6 +82,7 @@ class SolfegeSynthProcessor extends AudioWorkletProcessor {
     const attackS = v.attack * sampleRate;
     const releaseS = v.release * sampleRate;
     const isVoice = v.kind === VOICE;
+    const isClick = v.kind === CLICK;
     let end = v.end;
     if (v.releasedAt >= 0 && (end < 0 || v.releasedAt < end)) end = v.releasedAt;
     let phase = v.phase, vib = v.vibPhase, lp = v.lp;
@@ -107,7 +109,8 @@ class SolfegeSynthProcessor extends AudioWorkletProcessor {
       if (phase >= 1) phase -= 1;
       const tri = 4 * Math.abs(phase - 0.5) - 1;
       const saw = 2 * phase - 1 - polyBlep(phase, dt);
-      const raw = tri + (saw - tri) * v.saw_mix;
+      // A metronome tick is a burst of noise: no pitch for the detector to hear.
+      const raw = isClick ? Math.random() * 2 - 1 : tri + (saw - tri) * v.saw_mix;
       lp += v.lpA * (raw - lp);
       out[i] += lp * env * v.gain;
     }

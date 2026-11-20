@@ -12,13 +12,15 @@ signal finished(results: Array[NoteResult])
 
 enum Phase { IDLE, CADENCE, LISTEN, COUNT_IN, SING, RESULT }
 
-const COUNT_IN_SECONDS := 1.2
+const COUNT_IN_SECONDS := 1.2   ## sirens and slides
+const COUNTDOWN_SECONDS := 3.0  ## before the first note of a melody: "3, 2, 1"
 const TAIL_SECONDS := 0.4
 
 var exercise: Exercise
 var profile: LearnerProfile
 var tempo_scale := 1.0
 var play_cadence := true
+var metronome := false          ## click the beat (count-in and singing); from the profile
 var phase := Phase.IDLE
 var targets: Array = []         ## what's scored and drawn (relative seconds, learner's voice)
 var reference: Array = []       ## what the synth plays as the example
@@ -35,6 +37,7 @@ func _init(p_exercise: Exercise, p_profile: LearnerProfile, p_tempo_scale := -1.
 	exercise = p_exercise
 	profile = p_profile
 	tempo_scale = p_tempo_scale if p_tempo_scale > 0.0 else profile.tempo_scale
+	metronome = profile.metronome
 	reference = exercise.realize_for(profile, tempo_scale)
 	match exercise.mode:
 		Exercise.Mode.SIREN:
@@ -92,7 +95,7 @@ func update(frames: Array[PitchFrame], source_now: float) -> void:
 		Phase.CADENCE:
 			_after_cadence()
 		Phase.LISTEN:
-			_enter(Phase.COUNT_IN, COUNT_IN_SECONDS)
+			_enter(Phase.COUNT_IN, count_in_seconds())
 		Phase.COUNT_IN:
 			_begin_sing(source_now)
 		Phase.SING:
@@ -103,6 +106,51 @@ func stop() -> void:
 	if _engine:
 		_engine.release_all()
 	phase = Phase.IDLE
+
+
+## Melodies get a 3-second countdown; sirens and slides a short pause.
+func count_in_seconds() -> float:
+	return COUNTDOWN_SECONDS if exercise.mode == Exercise.Mode.NOTES else COUNT_IN_SECONDS
+
+
+## Seconds left before the first note (during COUNT_IN), else 0.
+func count_in_left() -> float:
+	if phase != Phase.COUNT_IN or _engine == null:
+		return 0.0
+	return maxf(0.0, _phase_end - _engine.time())
+
+
+## One beat at the practice tempo, in seconds.
+func beat_seconds() -> float:
+	return 60.0 / maxf(1.0, exercise.tempo_bpm) / tempo_scale
+
+
+## Beat times relative to the downbeat (first note = 0) from `from` up to the
+## end, on the song's own beat grid (pickups included). Each is [time, accent].
+func beat_times(from: float) -> Array:
+	var beat := beat_seconds()
+	var beats := maxi(1, roundi(exercise.beats_per_measure))
+	var first_bar := 0.0
+	if exercise.bar_offset_beats > 0.0:
+		first_bar = exercise.bar_offset_beats * beat - beats * beat
+	var out := []
+	var k := ceili((from - first_bar) / beat - 0.001)
+	while true:
+		var t := first_bar + k * beat
+		if t >= length_seconds() - 0.01:
+			break
+		out.append([t, posmod(k, beats) == 0])
+		k += 1
+	return out
+
+
+## Metronome ticks from the start of the countdown to the last note: a higher
+## tick on the first beat of each bar. Short and unpitched to the detector
+## (far above any voice), so they are allowed without headphones too.
+func _schedule_clicks(downbeat: float) -> void:
+	for b in beat_times(-count_in_seconds() + 0.05):
+		var accent: bool = b[1]
+		_engine.note(96 if accent else 91, downbeat + b[0], 0.012, SynthEngine.Kind.CLICK, 0.22 if accent else 0.15)
 
 
 ## Seconds since SING began (source clock), for drawing targets.
@@ -121,7 +169,7 @@ func _after_cadence() -> void:
 		var len := _engine.sequence(reference, 1.0, _engine.time() + 0.1)
 		_enter(Phase.LISTEN, len + 0.3)
 	else:
-		_enter(Phase.COUNT_IN, COUNT_IN_SECONDS)
+		_enter(Phase.COUNT_IN, count_in_seconds())
 
 
 func _begin_sing(source_now: float) -> void:
@@ -214,6 +262,8 @@ func _enter(p: Phase, seconds: float) -> void:
 		_engine.set_drone(-1)
 	phase = p
 	_phase_end = _engine.time() + seconds
+	if p == Phase.COUNT_IN and metronome and exercise.mode == Exercise.Mode.NOTES:
+		_schedule_clicks(_phase_end)
 	phase_changed.emit(p)
 
 

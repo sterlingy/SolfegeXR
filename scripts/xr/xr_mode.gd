@@ -49,6 +49,7 @@ var _start_xr: Node            ## XRToolsStartXR (web stereo path)
 var _stereo: Node              ## the addon's WebXRStereo node
 var _xr_frames := 0            ## frames since entering XR (diagnostics)
 var _last_stage := ""
+var _select_js: JavaScriptObject  ## window.solfegeXrSelect: the browser's pinch per hand
 
 
 func _ready() -> void:
@@ -165,8 +166,49 @@ func _on_stereo_started() -> void:
 	transparent = bool(_stereo.get("passthrough_active"))
 	_xr_frames = 0
 	# The stereo node renders the eyes itself; the main viewport stays non-XR.
+	_watch_select()
 	get_tree().change_scene_to_file(XR_SCENE)
 	session_changed.emit(true)
+
+
+## Listen for the browser's own pinch (WebXR selectstart/selectend) on the
+## stereo session. It is the system's pinch recogniser, steadier than working
+## one out from the hand joints. `?pinch=joints` turns it off.
+func _watch_select() -> void:
+	_select_js = null
+	if not OS.has_feature("web") or _web_query("pinch") == "joints":
+		return
+	JavaScriptBridge.eval("""
+(function () {
+  var st = window.solfegeXrSelect = { left: 0, right: 0, seenleft: 0, seenright: 0 };
+  var s = window.ShivooStereo && window.ShivooStereo.session;
+  if (!s) return;
+  function on(v) {
+    return function (e) {
+      var h = e.inputSource && e.inputSource.handedness;
+      if (h !== 'left' && h !== 'right') return;
+      st[h] = v;
+      if (!st['seen' + h]) {
+        st['seen' + h] = 1;
+        if (window.solfegeXrDiag) window.solfegeXrDiag('browser select events: yes (' + h + ')');
+      }
+    };
+  }
+  s.addEventListener('selectstart', on(1));
+  s.addEventListener('selectend', on(0));
+})();
+""", true)
+	_select_js = JavaScriptBridge.get_interface("solfegeXrSelect")
+
+
+## The browser's pinch for "left" or "right": 1 pinched, 0 open, or -1 when
+## the browser hasn't reported one for that hand (use the joints instead).
+func select_state(hand: String) -> int:
+	if _select_js == null or not active:
+		return -1
+	if not bool(_select_js.get("seen" + hand)):
+		return -1
+	return int(_select_js.get(hand))
 
 
 # ------------------------------------------------------------------ enter/exit

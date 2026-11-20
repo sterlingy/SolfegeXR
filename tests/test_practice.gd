@@ -159,3 +159,66 @@ func test_headphones_keep_drone_and_guide() -> void:
 		t += 800 / 48000.0
 	assert_true(peak > 0.05, "guide + drone audible with headphones: %s" % peak)
 	fake.free()
+
+
+func test_melody_has_a_three_second_countdown() -> void:
+	var profile := LearnerProfile.new()
+	var ex := Curriculum.exercises_for(Skills.Id.STEPS, 0)[0]
+	var s := PracticeSession.new(ex, profile, 1.0)
+	assert_near(s.count_in_seconds(), 3.0, 0.001)
+
+
+func test_metronome_ticks_on_the_beat_through_the_countdown_and_song() -> void:
+	var profile := LearnerProfile.new()
+	profile.metronome = true
+	var ex := Curriculum.exercises_for(Skills.Id.STEPS, 0)[0]
+	var engine := SynthEngine.new(48000.0)
+	var s := PracticeSession.new(ex, profile, 1.0)
+	s.play_cadence = false
+	s.start(engine)
+	# Ride through LISTEN into COUNT_IN.
+	var guard := 0
+	while s.phase != PracticeSession.Phase.COUNT_IN and guard < 2000:
+		engine.render(800)
+		s.update([] as Array[PitchFrame], engine.time())
+		guard += 1
+	assert_eq(s.phase, PracticeSession.Phase.COUNT_IN)
+	var downbeat := engine.time() + s.count_in_left()
+	var ticks := []
+	for v in engine._voices:
+		if v.kind == SynthEngine.Kind.CLICK:
+			ticks.append(v.start / engine.rate - downbeat)
+	var beat := s.beat_seconds()
+	assert_true(ticks.size() >= int(3.0 / beat) + int(s.length_seconds() / beat) - 1, "ticks: %d" % ticks.size())
+	assert_true(ticks.min() >= -3.0, "starts inside the countdown")
+	assert_true(ticks.max() < s.length_seconds(), "stops at the end")
+	for t in ticks:
+		var off := fposmod(t, beat)
+		assert_true(off < 0.002 or beat - off < 0.002, "on the beat: %f" % t)
+
+
+func test_no_ticks_without_the_metronome() -> void:
+	var profile := LearnerProfile.new()
+	var ex := Curriculum.exercises_for(Skills.Id.STEPS, 0)[0]
+	var engine := SynthEngine.new(48000.0)
+	var s := PracticeSession.new(ex, profile, 1.0)
+	s.play_cadence = false
+	s.start(engine)
+	var guard := 0
+	while s.phase != PracticeSession.Phase.SING and guard < 4000:
+		engine.render(800)
+		s.update([] as Array[PitchFrame], engine.time())
+		guard += 1
+	assert_eq(engine._voices.filter(func(v): return v.kind == SynthEngine.Kind.CLICK).size(), 0)
+
+
+func test_metronome_ticks_are_ignored_by_the_detector() -> void:
+	var engine := SynthEngine.new(48000.0)
+	for i in 8:
+		engine.note(96 if i % 4 == 0 else 91, 0.05 + i * 0.25, 0.012, SynthEngine.Kind.CLICK, 0.22)
+	var audio := engine.render(48000 * 2)
+	var voiced := 0
+	for f in YinDetector.analyze(audio, 48000.0):
+		if f.confidence >= 0.6 and f.frequency > 0.0:
+			voiced += 1
+	assert_true(voiced <= 2, "ticks read as pitch in %d frames" % voiced)

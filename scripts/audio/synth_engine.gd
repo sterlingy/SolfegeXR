@@ -7,7 +7,7 @@ extends RefCounted
 ## Timbre (per design): not a sine. A triangle blended with a little
 ## band-limited sawtooth, through a gentle low-pass, with delayed vibrato.
 
-enum Kind { VOICE, DRONE, PAD }
+enum Kind { VOICE, DRONE, PAD, CLICK }  ## CLICK: a short metronome tick
 
 const VOICE_VIBRATO_HZ := 5.2
 const VOICE_VIBRATO_CENTS := 12.0
@@ -48,10 +48,10 @@ func note(midi: float, at: float, duration: float, kind := Kind.VOICE, gain := 0
 		phase = randf(),
 		vib_phase = 0.0,
 		lp = 0.0,
-		attack = 0.04 if kind == Kind.VOICE else 0.3,
-		release = 0.08 if kind == Kind.VOICE else 0.4,
-		saw_mix = 0.3 if kind == Kind.VOICE else (0.6 if kind == Kind.DRONE else 0.15),
-		cutoff = minf(hz * 4.0, 3000.0) if kind == Kind.VOICE else (700.0 if kind == Kind.DRONE else 1800.0),
+		attack = {Kind.VOICE: 0.04, Kind.CLICK: 0.001}.get(kind, 0.3),
+		release = {Kind.VOICE: 0.08, Kind.CLICK: 0.03}.get(kind, 0.4),
+		saw_mix = {Kind.VOICE: 0.3, Kind.DRONE: 0.6, Kind.CLICK: 0.0}.get(kind, 0.15),
+		cutoff = minf(hz * 4.0, 3000.0) if kind == Kind.VOICE else {Kind.DRONE: 700.0, Kind.CLICK: 8000.0}.get(kind, 1800.0),
 		released_at = -1,
 	}
 	if sink:
@@ -169,6 +169,7 @@ func _render_voice(v: Dictionary, out: PackedFloat32Array, count: int) -> bool:
 	var release_s: float = v.release * rate
 	var lp_a := 1.0 - exp(-TAU * v.cutoff / rate)
 	var is_voice: bool = v.kind == Kind.VOICE
+	var is_click: bool = v.kind == Kind.CLICK
 	var phase: float = v.phase
 	var vib_phase: float = v.vib_phase
 	var lp: float = v.lp
@@ -203,6 +204,9 @@ func _render_voice(v: Dictionary, out: PackedFloat32Array, count: int) -> bool:
 		var tri := 4.0 * absf(phase - 0.5) - 1.0
 		var saw := 2.0 * phase - 1.0 - _poly_blep(phase, dt)
 		var raw := lerpf(tri, saw, saw_mix)
+		if is_click:
+			# A tick is a burst of noise: no pitch for the detector to hear.
+			raw = randf() * 2.0 - 1.0
 		lp += lp_a * (raw - lp)
 		out[i] += lp * env * gain
 	v.phase = phase

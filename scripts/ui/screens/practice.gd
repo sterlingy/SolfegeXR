@@ -21,6 +21,8 @@ var _result: Label
 var _start_button: Button
 var _next_button: Button
 var _tempo_buttons: Array[Button] = []
+var _metronome: Button
+var _countdown := 0             ## number last shown in the countdown
 var _announced := ""
 var _preview_targets: Array = []
 
@@ -88,11 +90,29 @@ func _build() -> void:
 		tempo_row.add_child(b)
 		_tempo_buttons.append(b)
 
+	_metronome = Button.new()
+	_metronome.toggle_mode = true
+	_metronome.custom_minimum_size = Vector2(0, 90)
+	_metronome.add_theme_font_size_override("font_size", 34)
+	_metronome.add_theme_color_override("font_pressed_color", UI.ACCENT)
+	_metronome.add_theme_color_override("font_hover_pressed_color", UI.ACCENT)
+	_metronome.button_pressed = App.profile.metronome
+	_metronome.toggled.connect(func(on: bool):
+		App.profile.metronome = on
+		App.profile.save()
+		_label_metronome())
+	_col.add_child(_metronome)
+	_label_metronome()
+
 	var actions := UI.row(_col)
 	_start_button = UI.button(actions, "Start", _on_start, true)
 	_start_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_next_button = UI.button(actions, "Next ›", _on_next)
 	_next_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+
+func _label_metronome() -> void:
+	_metronome.text = "Metronome: on" if _metronome.button_pressed else "Metronome: off"
 
 
 func _exercise() -> Exercise:
@@ -172,7 +192,11 @@ func _on_phase(phase: PracticeSession.Phase) -> void:
 			_status.text = "Listen…"
 			_trace.set_targets(_session.reference, App.pitch_source().now() + 0.1)
 		P.COUNT_IN:
-			_status.text = "Your turn…"
+			_countdown = 0
+			_show_countdown()
+			if _exercise().mode == Exercise.Mode.NOTES:
+				# The notes scroll in toward the line during the countdown.
+				_trace.set_targets(_session.targets, App.pitch_source().now() + _session.count_in_left())
 		P.SING:
 			_status.text = {Exercise.Mode.SIREN: "Slide up and down!", Exercise.Mode.SLIDE_TO: "Slide to the note, then hold it!",
 				Exercise.Mode.FOLLOW: "Follow the slide!"}.get(_exercise().mode, "Sing!")
@@ -183,6 +207,17 @@ func _on_phase(phase: PracticeSession.Phase) -> void:
 					fake.siren(App.profile.voice_low + 2, App.profile.voice_high - 3)
 				else:
 					fake.follow(_session.targets, _session.sing_origin_source)
+
+
+## "3… 2… 1…" before the first note (melodies); a short "Your turn" otherwise.
+func _show_countdown() -> void:
+	if _exercise().mode != Exercise.Mode.NOTES:
+		_status.text = "Your turn…"
+		return
+	var n := maxi(1, ceili(_session.count_in_left() - 0.001))
+	if n != _countdown:
+		_countdown = n
+		_status.text = "Sing in %d…" % n
 
 
 func _on_finished(results: Array[NoteResult]) -> void:
@@ -222,6 +257,8 @@ func _process(_delta: float) -> void:
 		_status.text = "I can't hear the microphone. Check the browser's permission."
 	if _session:
 		_session.update(frames, src.now())
+		if _session and _session.phase == PracticeSession.Phase.COUNT_IN:
+			_show_countdown()
 	_announce_target(src)
 
 

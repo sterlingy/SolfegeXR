@@ -63,15 +63,69 @@ func test_small_pinch_wobble_stays_a_tap() -> void:
 	_done()
 
 
-func test_pinch_and_grasp_together_make_one_tap() -> void:
-	root._click(true)
-	root._click(true)  # the same gesture reported as a second button
-	assert_eq(root._held, 2)
-	root._click(false)
-	assert_true(root._pressed, "still held until the last release")
-	root._click(false)
-	assert_eq(root._held, 0)
+func test_second_hand_cannot_steal_a_press() -> void:
+	var left := XRController3D.new()
+	var right := XRController3D.new()
+	root._click(true, left)
+	root._click(true, right)  # the other hand pinching meanwhile
+	assert_true(root._same_owner(left), "first hand keeps the press")
+	root._click(false, right)
+	assert_true(root._pressed, "other hand's release doesn't end it")
+	root._click(false, left)
 	assert_false(root._pressed)
+	assert_eq(root._press_owner, null)
+	left.free()
+	right.free()
+	_done()
+
+
+func test_jittery_pinch_is_one_tap() -> void:
+	# A pinch whose strength flickers (tracking noise, dropped frames) makes one
+	# press and one release, not a burst of taps.
+	var c := XRController3D.new()
+	root.add_child(c)
+	root.controllers = [c] as Array[XRController3D]
+	var values := [0.0, 0.5, 0.8, 1.0, 0.0, 1.0, 0.3, 0.9, 0.0, 0.0, 1.0, 0.6]
+	var opened := [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
+	var downs := 0
+	var ups := 0
+	for v in values + opened:
+		var before: bool = root._pinch.get(c, [false, 0.0])[0]
+		root._step_pinch(c, v, true, 1.0 / 72.0)
+		var now: bool = root._pinch[c][0]
+		downs += int(now and not before)
+		ups += int(before and not now)
+	assert_eq(downs, 1, "one press")
+	assert_eq(ups, 1, "one release, after staying open")
+	_done()
+
+
+func test_press_uses_where_the_pointer_was_before_the_pinch() -> void:
+	var c := XRController3D.new()
+	root.add_child(c)
+	var t: float = root._t
+	root._history = [
+		[t - 0.15, "panel", Vector2(100, 200), root.viewport],
+		[t - 0.09, "panel", Vector2(102, 201), root.viewport],
+		[t, "panel", Vector2(180, 300), root.viewport],  # the pinch swung the pointer
+	]
+	root._click(true, c)
+	assert_eq(root._press_pos, Vector2(102, 201), "pressed where it pointed before the fingers closed")
+	root._click(false, c)
+	_done()
+
+
+func test_pinch_on_the_bar_starts_a_drag_even_if_it_swung_off() -> void:
+	var c := XRController3D.new()
+	root.add_child(c)
+	var t: float = root._t
+	root._history = [[t - 0.09, "panel_bar", Vector2(-1, -1), null], [t, "panel", Vector2(500, 1800), root.viewport]]
+	root._hover = "panel"
+	root._click(true, c)
+	assert_eq(root._press_target, "panel_bar")
+	assert_true(root._drag == root.panel, "dragging the panel")
+	root._click(false, c)
+	assert_true(root._drag == null)
 	_done()
 
 

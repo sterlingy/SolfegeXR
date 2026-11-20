@@ -31,6 +31,10 @@ const AWAY_ANGLE := 55.0                       ## a window this far off your vie
 const AWAY_SECONDS := 1.0
 
 const TAP_SLOP := 70.0                         ## panel pixels a pinch may wander and still tap
+const PINCH_ON := 0.75                         ## pinch strength that presses (thumb and index nearly touching)
+const PINCH_OFF := 0.35                        ## ...and that counts as open again
+const RELEASE_HOLD := 0.12                     ## seconds a pinch must stay open to release (tracking drops a frame or two)
+const PRESS_LOOKBACK := 0.1                    ## seconds: press where the pointer was before the fingers closed
 const DOC_SIZE := Vector2(0.5, 0.6)            ## the manual / privacy window, metres
 const DOC_PIXELS := Vector2i(1000, 1200)
 
@@ -69,7 +73,10 @@ var _press_pos := Vector2.ZERO
 var _last_pos := Vector2.ZERO
 var _scroll_accum := 0.0
 var _scrolling := false         ## this pinch moved far enough to be a scroll
-var _held := 0                  ## buttons held down by the current gesture
+var _press_owner: Variant = null  ## what holds the current press: a controller, "mouse" or "select"
+var _pinch := {}                ## controller -> [down, seconds open]
+var _history: Array = []        ## recent pointer states: [time, hover, panel pos, screen]
+var _pinch_source := ""         ## "browser" or "joints", for diagnostics
 var _web: WebXRInterface
 var _active_source := -1
 var _active_ctrl: XRController3D  ## the hand/controller that pinched last
@@ -479,6 +486,7 @@ func _process(delta: float) -> void:
 	hands_float.position.y = 0.01 * sin(_t * 1.6)
 	_update_summon(delta)
 	_update_pointer()
+	_poll_pinches(delta)
 
 
 ## Put both windows in front of where the user is looking, level with their
@@ -697,6 +705,7 @@ func _update_pointer() -> void:
 			_move(hit[1], hit[0])
 		else:
 			_set_hover("")
+		_remember(hit)
 	pointer_dot.visible = dot_at != null
 	if dot_at != null:
 		pointer_dot.global_position = dot_at
@@ -779,22 +788,24 @@ func _move(pos: Vector2, vp: SubViewport = null) -> void:
 
 ## Pinch / trigger / mouse button. Window controls take the pinch first;
 ## everything else is a tap on the panel.
-func _click(pressed: bool) -> void:
-	# One gesture can report two buttons (a hand's pinch and grasp, or trigger
-	# and grip): act on the first press and the last release only.
+func _click(pressed: bool, owner: Variant = "mouse") -> void:
+	# One press at a time: while one hand (or the mouse) holds it, the other
+	# hand's pinches are ignored, and only the owner's release ends it.
 	if pressed:
-		_held += 1
-		if _held > 1:
+		if _press_owner != null:
 			return
+		_press_owner = owner
 	else:
-		if _held == 0:
+		if _press_owner == null or not _same_owner(owner):
 			return
-		_held -= 1
-		if _held > 0:
-			return
+		_press_owner = null
 	var ray: Variant = _pointer_ray()
+	# A hand's pointer swings as the fingers close, so a pinch presses what the
+	# pointer was on just before.
+	var before: Array = _lookback() if pressed and owner is XRController3D else []
+	var hover := _hover if before.is_empty() else str(before[1])
 	if pressed:
-		_press_target = _hover if _hover in ["panel_bar", "sign_bar", "doc_bar", "reset", "summon"] else ""
+		_press_target = hover if hover in ["panel_bar", "sign_bar", "doc_bar", "reset", "summon"] else ""
 		match _press_target:
 			"panel_bar":
 				_start_drag(panel, ray)
@@ -818,6 +829,8 @@ func _click(pressed: bool) -> void:
 	if ray == null and pressed:
 		return
 	var hit := _hit_screen(ray) if ray != null else [null, Vector2(-1, -1), -1.0]
+	if not before.is_empty() and before[3] != null:
+		hit = [before[3], before[2], 0.0]
 	var pos: Vector2 = hit[1]
 	if pos.x < 0.0:
 		pos = _last_pos
@@ -887,29 +900,92 @@ func _wheel(pos: Vector2, button: MouseButton, vp: SubViewport) -> void:
 func _on_select(input_source_id: int, pressed: bool) -> void:
 	if pressed:
 		_active_source = input_source_id
-	_click(pressed)
+	_click(pressed, "select")
 	if not pressed:
 		_active_source = -1
 
 
-func _on_controller_pressed(name: String, c: XRController3D) -> void:
-	if name in ["trigger_click", "select_button", "trigger", "pinch", "grip_click"]:
-		if _active_ctrl != c and not _drag:
-			# Point with the hand that pinched before working out what it hits.
-			_active_ctrl = c
-			_update_pointer()
-	_on_controller_button(name, true)
-
-
-func _on_controller_released(name: String, _c: XRController3D) -> void:
-	_on_controller_button(name, false)
-
-
-func _on_controller_button(name: String, pressed: bool) -> void:
-	if name in ["trigger_click", "select_button", "trigger", "pinch", "grip_click"]:
-		_click(pressed)
-	elif name in ["by_button", "menu_button"] and pressed:
+## Taps come from _poll_pinches; buttons only recenter.
+func _on_controller_pressed(name: String, _c: XRController3D) -> void:
+	if name in ["by_button", "menu_button"]:
 		recenter()
+
+
+func _on_controller_released(_name: String, _c: XRController3D) -> void:
+	pass
+
+
+func _same_owner(owner: Variant) -> bool:
+	return typeof(owner) == typeof(_press_owner) and owner == _press_owner
+
+
+# ---------------------------------------------------------------- pinching
+
+## Read each hand's pinch as a strength (0 open .. 1 closed), with hysteresis:
+## it presses when nearly closed, and releases only after staying clearly open
+## for RELEASE_HOLD. Hand tracking jitters and drops frames, and a single
+## on/off threshold read one pinch as dozens of taps. Only the thumb and index
+## count: a relaxed, half-curled hand isn't a press.
+func _poll_pinches(delta: float) -> void:
+	for c in controllers:
+		_step_pinch(c, _pinch_value(c), c.get_has_tracking_data(), delta)
+
+
+func _step_pinch(c: XRController3D, value: float, tracked: bool, delta: float) -> void:
+	var state: Array = _pinch.get(c, [false, 0.0])
+	if not state[0]:
+		if value >= PINCH_ON and tracked:
+			_pinch[c] = [true, 0.0]
+			_on_pinch(c, true)
+			return
+	elif value <= PINCH_OFF:
+		state[1] += delta
+		if state[1] >= RELEASE_HOLD:
+			_pinch[c] = [false, 0.0]
+			_on_pinch(c, false)
+			return
+	else:
+		state[1] = 0.0
+	_pinch[c] = state
+
+
+## The browser's own pinch (WebXR select) when it reports one; otherwise the
+## strength the addon works out from the hand joints (or a controller trigger).
+func _pinch_value(c: XRController3D) -> float:
+	if not c.get_is_active():
+		return 0.0
+	var browser := XRMode.select_state(c.tracker.trim_suffix("_hand"))
+	var source := "browser" if browser >= 0 else "joints"
+	if source != _pinch_source:
+		_pinch_source = source
+		XRMode.diag("pinch source: %s" % source)
+	if browser >= 0:
+		return float(browser)
+	return c.get_float("trigger")
+
+
+func _on_pinch(c: XRController3D, pressed: bool) -> void:
+	if pressed and _press_owner == null and _active_ctrl != c and not _drag:
+		# Point with the hand that pinched before working out what it hits.
+		_active_ctrl = c
+		_history.clear()
+		_update_pointer()
+	_click(pressed, c)
+
+
+## Keep the last moment of pointer states, for _lookback.
+func _remember(hit: Array) -> void:
+	_history.append([_t, _hover, hit[1], hit[0] if _hover == "panel" else null])
+	while _history.size() > 1 and _history[0][0] < _t - 0.3:
+		_history.pop_front()
+
+
+## The pointer state from PRESS_LOOKBACK ago (or the oldest kept), or [].
+func _lookback() -> Array:
+	for entry: Array in _history:
+		if entry[0] >= _t - PRESS_LOOKBACK:
+			return entry
+	return []
 
 
 func _unhandled_input(event: InputEvent) -> void:

@@ -14,6 +14,7 @@ var minor_syllables := MusicKey.MinorSyllables.LA_BASED
 var chromatic_enabled := false
 var has_headphones := false
 var tempo_scale := 1.0         ## preferred practice speed
+var metronome := false         ## click the beat during the count-in and singing
 var mic_device_id := ""        ## chosen input ("" = browser default)
 var onboarded := false
 var skills := {}               ## Skills.Id -> SkillProgress
@@ -80,7 +81,7 @@ func to_dict() -> Dictionary:
 	return {version = VERSION, voice_low = voice_low, voice_high = voice_high,
 		range_tested = range_tested, minor_syllables = int(minor_syllables),
 		chromatic_enabled = chromatic_enabled, has_headphones = has_headphones,
-		tempo_scale = tempo_scale, onboarded = onboarded, mic_device_id = mic_device_id, skills = sk}
+		tempo_scale = tempo_scale, metronome = metronome, onboarded = onboarded, mic_device_id = mic_device_id, skills = sk}
 
 
 static func from_dict(d: Dictionary) -> LearnerProfile:
@@ -92,6 +93,7 @@ static func from_dict(d: Dictionary) -> LearnerProfile:
 	p.chromatic_enabled = bool(d.get("chromatic_enabled", false))
 	p.has_headphones = bool(d.get("has_headphones", false))
 	p.tempo_scale = float(d.get("tempo_scale", 1.0))
+	p.metronome = bool(d.get("metronome", false))
 	p.onboarded = bool(d.get("onboarded", false))
 	p.mic_device_id = str(d.get("mic_device_id", ""))
 	var sk: Dictionary = d.get("skills", {})

@@ -28,6 +28,7 @@ signal feedback_changed(text: String)
 @export var target_color := Color("ffd27a", 0.30)
 @export var target_border := Color("ffd27a", 0.75)
 @export var lyric_color := Color(1, 1, 1, 0.85)
+@export var now_color := Color(1, 1, 1)   ## the line where notes should be sung
 
 var key := MusicKey.new()
 var center_midi := 57.0
@@ -232,9 +233,10 @@ func _draw() -> void:
 			draw_string(_font, Vector2(x0 + 4, y + band_h + font_size * 0.9), t.lyric,
 					HORIZONTAL_ALIGNMENT_LEFT, maxf(x1 - x0, font_size * 3.0), int(font_size * 0.75), lyric_color)
 
-	# "Now" marker.
 	var now_x := size.x * now_fraction
-	draw_line(Vector2(now_x, 0), Vector2(now_x, size.y), Color(1, 1, 1, 0.12), 2.0)
+	# "Now" marker: where a note should be sung. A soft glow with a bright core.
+	draw_line(Vector2(now_x, 0), Vector2(now_x, size.y), Color(now_color, 0.14), 12.0)
+	draw_line(Vector2(now_x, 0), Vector2(now_x, size.y), Color(now_color, 0.75), 3.0)
 
 	# Trace: break at gaps, at large jumps (octave folds) and at color changes.
 	var seg := PackedVector2Array()
