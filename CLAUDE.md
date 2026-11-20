@@ -40,6 +40,7 @@ MVP: MusicXML (Godot `XMLParser`) and MIDI (small custom parser). Later: photo O
 - One pitch detector (YIN/pYIN) in C++, compiled to WASM and native so scoring is identical. A JS stand-in is OK until Emscripten is set up. Target latency < ~50 ms.
 - Synth tone / drone: `AudioStreamGenerator`.
 - Shared code with ChordMasterXR will become a Godot addon in its own repo (pinned submodule). For now, build inside this repo and split later. **Never modify ChordMasterXR** (team project).
+- XR uses the studio's **Shivoo XR** addon (`addons/shivoo_xr`, git submodule pinned to a commit of the GitLab repo `shivoo-core/godot/shivooxrplugin`; never edit it here) and Godot XR Tools 4.5.2 (`addons/godot-xr-tools`, unmodified). WebXR runs through the addon's two-pass stereo, because Godot's own WebXR renderer needs `OVR_multiview2`, which the XREAL Aura's Chrome lacks. Details: docs/ARCHITECTURE.md "XR".
 
 ## Platforms
 1. Web until feature-complete (desktop Chrome + Chrome on Android, from week one).
@@ -52,9 +53,11 @@ Guardrails: phone-first portrait touch UI everywhere; early throwaway native And
 - `scripts/pitch/`: `PitchSource` (abstract), `WebPitchSource`, `FakePitchSource` (demo singer for the editor), `PitchFrame`.
 - `scripts/music/music_key.gd`: tonic + mode, scale degrees, syllable rendering.
 - `scripts/ui/`: `PitchTrace` (custom-drawn lanes, targets, trace), `main.gd` (free-sing sandbox), `ui.gd` (shared look), `screens/*.gd` (onboarding, range_test, home, practice, course, settings, progress, free_sing). Screens are built in code.
+- `scripts/xr/`: `XRMode` (autoload: starts/ends XR, owns the web stereo rig) and `xr_root.gd` (the XR scene: app panel, hand-sign and doc windows, grab bars, recenter, pointer). `scripts/ui/html_doc.gd` shows `site/` pages inside XR.
 - `scripts/app.gd`: the `App` autoload (profile, pitch source, synth, navigation via `App.go(name, args)`). Root scene: `scenes/app_root.tscn`.
 - `scripts/scoring/`, `scripts/song/`, `scripts/curriculum/`, `scripts/practice/`, `scripts/audio/`, `scripts/dsp/`: scoring, import and analysis, skill model and courses, the practice flow, the synth, offline YIN and WAV.
-- Dev args (app_root): `-- --profile=user://dev.json --demo --screen=home|practice-core|course:<song_id> --autostart --screenshot=out.png --wait=4`.
+- Dev args (app_root): `-- --profile=user://dev.json --demo --screen=home|practice-core|course:<song_id> --autostart --screenshot=out.png --wait=4`, plus `--xr-preview` for the XR scene on desktop.
+- Web exports: run `--import` first (an export right after an edit can pick up the old script). Clone with `--recurse-submodules`.
 - How to run, test on Android, and read the debug line: [docs/RUNNING.md](docs/RUNNING.md). Dev args: `-- --demo`, `-- --screenshot=out.png`.
 - Commit `*.uid` files. Godot 4.4+ uses them to keep resource references stable.
 - Tests: `Godot_..._console.exe --headless --path . -s res://tests/run_tests.gd` (see docs/RUNNING.md). Run them before every commit.

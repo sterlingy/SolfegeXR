@@ -75,6 +75,21 @@ Screens (`scripts/ui/screens/*`) only show state and pass taps along. All the lo
 - Screens are built in code with the `UI` helpers for a consistent phone-first look. `PitchTrace` is the custom-drawn lanes, target bars (including glides and lyrics) and the sung line.
 - `scenes/main.tscn` is the original sandbox, now **Free sing**.
 
+## XR: `scripts/xr/`, `addons/`
+
+- `XRMode` (autoload) starts and ends XR. `scenes/xr_root.tscn` (`xr_root.gd`) is the XR scene. The whole 2D app runs in a SubViewport shown on a floating panel, with the Curwen hand sign in a second window beside it. (UE comparison: a WidgetComponent in world space, driven like a WidgetInteractionComponent.)
+- **Windows:** each has a grab bar under it; pinch it and move your hand to move the window, which keeps facing you. The round knob by the panel's bar recenters everything. When every window is out of sight for a second, a "Bring windows here" button appears low in front of you. The manual and privacy pages open in a third window, because a browser tab can't show inside XR. `HtmlDoc` (`scripts/ui/html_doc.gd`) converts `site/*/index.html` to RichTextLabel BBCode, so `site/*.html` is packed into both exports.
+- **Pointing:** the hand or controller that pinched last drives the pointer. A pinch may wander up to 70 panel pixels and still count as a tap, released where it was pressed. A pinch and a grasp from the same gesture count as one press.
+- **Web (WebXR):**
+  - Godot's own WebXR renderer needs the `OVR_multiview2` WebGL extension, which Chrome on the XREAL Aura and Galaxy XR doesn't have, so it shows nothing there. Instead, XRMode uses the studio's **Shivoo XR** addon (`addons/shivoo_xr`, `scripts/webxr_stereo.gd` + `web/webxr_stereo.js`). It runs the WebXR session itself and renders each eye into its own SubViewport.
+  - XRMode builds that rig in code once the browser reports `immersive-vr` support. It is XR Tools' `StartXR` (built in code so the web export doesn't carry XR Tools' scenes), the stereo node, and an `XROrigin3D` with a camera and two controllers. The rig outlives scene changes. Its origin joins the tree only while a session runs.
+  - URL switches: `?xr=vr` forces VR, `?webxr=native` uses Godot's own WebXR session, and `?diag=1` logs each XR step and tap to the server (see [RUNNING.md](RUNNING.md)).
+- **Native (Android XR, feature tag `xr`):** OpenXR through Godot, with a see-through blend mode when the device has one.
+- **Addons:**
+  - `addons/shivoo_xr` is a **git submodule** pinned to a commit of `gitlab.shivoostudios.com/shivoo-core/godot/shivooxrplugin`. Don't edit it here: changes go to the plugin's own repo, then update the pin. Its editor plugin is left off on purpose: its export step would add 1.8 MB of image-tracking script to every web build. The web preset includes `addons/shivoo_xr/web/webxr_stereo.js` by name instead. If a plugin update needs another web file, add it to the web preset's include filter.
+  - `addons/godot-xr-tools` is the official 4.5.2 release, unmodified. It provides `StartXR` and its two autoloads. The web preset excludes its scenes, models and textures.
+  - `addons/godotopenxrvendors` is git-ignored and used by the Android XR build.
+
 ## Web page and hosting
 
 - `web/page_head.html` is injected into the exported page (the "Manual" link). `web/platform.js` handles iOS detection and the audio session for the silent switch. `web/file_picker.js` is the file chooser for imports.
@@ -92,7 +107,7 @@ Screens (`scripts/ui/screens/*`) only show state and pass taps along. All the lo
 
 ## Tests
 
-`tests/test_*.gd`, about 90 of them, run headless in about 5 s. Script errors fail a test.
+`tests/test_*.gd`, about 100 of them, run headless in about 7 s. Script errors fail a test. The runner waits one frame first, so scene tests (for example `test_xr_windows.gd`) can add nodes to the tree.
 ```
 Godot_v4.7.2-stable_win64_console.exe --headless --path . -s res://tests/run_tests.gd
 ```

@@ -1,5 +1,12 @@
 # Running the pitch-trace prototype
 
+## Getting the code
+The Shivoo XR addon is a git submodule (`addons/shivoo_xr`, from the studio GitLab). Clone with it:
+```
+git clone --recurse-submodules <repo>
+```
+In an existing checkout, run `git submodule update --init`. The first fetch from GitLab asks you to sign in once. If the project is on a network share, git may refuse the submodule folder as "dubious ownership"; add it with `git config --global --add safe.directory <path to addons/shivoo_xr>`, as for the main folder.
+
 ## In the editor (no mic)
 Open the project in Godot 4.7 and press F5. It uses your real microphone; turn on *Demo singer* (Free sing, or Settings → Developer) to see the trace without singing.
 
@@ -42,6 +49,26 @@ Godot_v4.7.2-stable_win64_console.exe --headless --path . --export-debug "Web" b
 python -m http.server 8060 --bind 127.0.0.1 --directory build/web
 ```
 `.claude/launch.json` has the same server as `web-build`, for Claude's browser pane. `build/` is git-ignored.
+
+Run `--import` first after changing scripts (`... --headless --path . --import`). On the network share, an export straight after an edit has picked up the previous version of a script.
+
+## On XR glasses (WebXR)
+1. Open the tester link on the glasses (for example the XREAL Aura's Chrome) with `?diag=1` at the end, and tap **Enter AR (glasses / headset)**.
+2. The app floats in a panel about a metre in front of you, with the hand sign to its right. Point with your hand and pinch to tap. Pinch and drag up or down to scroll.
+3. To move a window, pinch the pale bar under it and move your hand. The round knob by the app's bar brings all windows back in front of you. If you lose them, a **Bring windows here** button appears low in front of you.
+4. To leave, tap **Exit AR** on the home screen.
+
+URL switches: `?xr=vr` starts a VR session instead of AR, and `?webxr=native` uses Godot's own WebXR renderer (blank on the Aura; see [ARCHITECTURE.md](ARCHITECTURE.md)).
+
+With `?diag=1`, each XR step, the frame rate, the tracked hands and every tap go to `build/hosting/diag.log` as `/__diag?xr=...` requests. To read them:
+```
+grep -o '"uri":"/__diag?xr=[^"&]*' build/hosting/diag.log | sed 's#.*xr=##' | python -c "import sys,urllib.parse;[print(urllib.parse.unquote(l.strip())) for l in sys.stdin]"
+```
+
+**Desktop XR preview** (no headset; the mouse points and clicks):
+```
+Godot_v4.7.2-stable_win64.exe --path . -- --demo --xr-preview
+```
 
 ## Testing without a singer
 Add `?testtone=220` to the URL, for example `http://localhost:8060/?testtone=220`, then press **Start**. Instead of the mic, a filtered sawtooth tone with vibrato steps through do-re-mi-fa-sol, and some notes are sharp on purpose. It exercises the real AudioWorklet → JavaScriptBridge → trace path, and needs no mic permission.

@@ -24,6 +24,9 @@ class ErrorCatcher extends Logger:
 var catcher := ErrorCatcher.new()
 
 func _initialize() -> void:
+	# One frame first, so the root viewport is in the tree and scene tests
+	# (e.g. test_xr_windows) can add nodes and use global transforms.
+	await process_frame
 	var filter := ""
 	var args := OS.get_cmdline_user_args()
 	if args.size() > 0:

@@ -101,6 +101,11 @@ func open_manual() -> void:
 
 ## Open one of the plain pages served next to the app (manual, privacy).
 func open_site_page(page: String) -> void:
+	# In XR (or its desktop preview) the page opens in a window in the scene:
+	# a new browser tab would leave or hide the XR session.
+	if XRMode.doc_requested.get_connections().size() > 0:
+		XRMode.doc_requested.emit(page)
+		return
 	if OS.has_feature("web"):
 		JavaScriptBridge.eval("window.open(new URL('%s/', location.href).href, '_blank')" % page, true)
 	else:
