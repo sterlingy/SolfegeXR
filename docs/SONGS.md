@@ -18,7 +18,7 @@ None of the files have lyrics yet; those wait until you've chosen lyric versions
 | 8 | Take Me Out to the Ball Game | C major | **low** | second half ("Let me root, root, root" onward) |
 | 9 | Shenandoah | D major | **low** | whole tune |
 | 10 | Danny Boy | C major | **low** | whole tune, especially the high section |
-| 12 | God Rest You Merry, Gentlemen | E minor | **low** | refrain ("O tidings of comfort and joy"); listed before Carol, which stays the finale |
+| 12 | God Rest You Merry, Gentlemen | E minor | high | Read from the Open Hymnal score (Stainer, 1918, public domain), tempo 160 as printed. The second "comfort and joy;" ends on A as printed (the familiar tune sings D). Listed before Carol, which stays the finale |
 | 11 | Shchedryk (Carol of the Bells), layered | G minor | arrangement | Original 4-part layering on the public-domain folk ostinato. **Not** Leontovych's 1916 score; that needs a score source, e.g. a public-domain edition on IMSLP. |
 
 Regenerate after editing the source:

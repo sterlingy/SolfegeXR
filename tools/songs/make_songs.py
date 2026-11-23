@@ -125,13 +125,16 @@ SONGS.append(dict(
 # before Carol of the Bells, which stays the finale (and keeps its id).
 SONGS.insert(len(SONGS) - 1, dict(
     id="12_god_rest_you_merry", title="God Rest You Merry, Gentlemen", fifths=1, mode="minor",
-    time=(4, 4), tempo=100, pickup=1, confidence="low",
-    note="E minor; a second minor-key song. Refrain (\"O tidings of comfort and joy\") especially uncertain.",
+    time=(4, 4), tempo=160, pickup=1, confidence="high",
+    note="E minor; a second minor-key song. Soprano line read from the Open Hymnal 2006 score "
+         "(Stainer's 1918 setting, public domain). The second \"comfort and joy;\" ends on A as printed; "
+         "the familiar tune sings a low D there.",
     parts=[("Melody", """
-        E4 | E4 B4 B4 A4 | G4 F#4 E4 D4 | E4 F#4 G4 A4 | B4h. E4 |
-        E4 B4 B4 A4 | G4 F#4 E4 D4 | E4 F#4 G4 A4 | B4h., B4 |
-        C5 A4 B4 C5 | D5 E5 B4 A4 | G4 E4 F#4 G4 | A4h G4 A4 |
-        B4h C5 B4 | B4 A4 G4 F#4 | E4h G4 F#4 | E4h G4 A4 | B4h C5 B4 | B4 A4 G4 F#4 | E4h. |""")]))
+        E4 | E4 B4 B4 A4 | G4 F#4 E4 D4 | E4 F#4 G4 A4 | B4h., E4 |
+        E4 B4 B4 A4 | G4 F#4 E4 D4 | E4 F#4 G4 A4 | B4h rq B4 |
+        C5 A4 B4 C5 | D5 E5 B4 A4 | G4 E4 F#4 G4 | A4h, G4 A4 |
+        B4h C5 B4 | B4 A4 G4 F#4 | E4h, G4e F#4e E4 | A4h, G4 A4 |
+        B4 C5 D5 E5 | B4 A4 G4 F#4 | E4h. |""")]))
 
 
 BAR_WARNINGS = []
