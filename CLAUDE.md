@@ -51,7 +51,7 @@ Guardrails: phone-first portrait touch UI everywhere; early throwaway native And
 ## Code map
 - `web/` holds the JS mic bridge and the AudioWorklet YIN detector. They ship as plain text through the export preset's `include_filter`.
 - `scripts/pitch/`: `PitchSource` (abstract), `WebPitchSource`, `FakePitchSource` (demo singer for the editor), `PitchFrame`.
-- `scripts/music/music_key.gd`: tonic + mode, scale degrees, syllable rendering.
+- `scripts/music/music_key.gd`: tonic + mode, scale degrees, syllable rendering. `scripts/music/notation.gd`: staff notation in the learner's key (sheet music view, drawn by `scripts/ui/sheet_painter.gd` inside `PitchTrace`).
 - `scripts/ui/`: `PitchTrace` (custom-drawn lanes, targets, trace), `main.gd` (free-sing sandbox), `ui.gd` (shared look), `screens/*.gd` (onboarding, range_test, home, practice, course, settings, progress, free_sing). Screens are built in code.
 - `scripts/xr/`: `XRMode` (autoload: starts/ends XR, owns the web stereo rig) and `xr_root.gd` (the XR scene: app panel, hand-sign and doc windows, grab bars, recenter, pointer). `scripts/ui/html_doc.gd` shows `site/` pages inside XR.
 - `scripts/app.gd`: the `App` autoload (profile, pitch source, synth, navigation via `App.go(name, args)`). Root scene: `scenes/app_root.tscn`.

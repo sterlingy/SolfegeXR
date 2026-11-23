@@ -20,6 +20,11 @@ var exercise: Exercise
 var profile: LearnerProfile
 var tempo_scale := 1.0
 var play_cadence := true
+## Hear the melody: with headphones it plays while the learner sings; without,
+## it plays once first (the mic must not hear it while they sing).
+var play_along := false
+## Play the melody once before singing. Off skips straight to the countdown.
+var hear_first := true
 var metronome := false          ## click the beat (count-in and singing); from the profile
 var phase := Phase.IDLE
 var targets: Array = []         ## what's scored and drawn (relative seconds, learner's voice)
@@ -31,6 +36,7 @@ var sing_origin_source := 0.0   ## pitch-source time when SING started
 var _engine: SynthEngine
 var _phase_end := 0.0           ## engine time
 var _sing_start_engine := 0.0
+var _listen_start_engine := 0.0  ## engine time of the first note of the listening pass
 
 
 func _init(p_exercise: Exercise, p_profile: LearnerProfile, p_tempo_scale := -1.0) -> void:
@@ -38,6 +44,8 @@ func _init(p_exercise: Exercise, p_profile: LearnerProfile, p_tempo_scale := -1.
 	profile = p_profile
 	tempo_scale = p_tempo_scale if p_tempo_scale > 0.0 else profile.tempo_scale
 	metronome = profile.metronome
+	play_along = profile.play_along and exercise.mode == Exercise.Mode.NOTES
+	hear_first = profile.hear_first
 	reference = exercise.realize_for(profile, tempo_scale)
 	match exercise.mode:
 		Exercise.Mode.SIREN:
@@ -144,7 +152,8 @@ func beat_times(from: float) -> Array:
 	return out
 
 
-## Metronome ticks from the start of the countdown to the last note: a higher
+## Metronome ticks (through the listening pass, then from the start of the
+## countdown to the last note): a higher
 ## tick on the first beat of each bar. Short and unpitched to the detector
 ## (far above any voice), so they are allowed without headphones too.
 func _schedule_clicks(downbeat: float, from: float) -> void:
@@ -163,13 +172,38 @@ func set_metronome(on: bool) -> void:
 	if on == metronome:
 		return
 	metronome = on
-	if _engine == null or not has_beat() or phase not in [Phase.COUNT_IN, Phase.SING]:
+	if _engine == null or not has_beat() or phase not in [Phase.LISTEN, Phase.COUNT_IN, Phase.SING]:
 		return
 	if not on:
 		_engine.stop_kind(SynthEngine.Kind.CLICK)
 		return
-	var downbeat := _phase_end if phase == Phase.COUNT_IN else _sing_start_engine
-	_schedule_clicks(downbeat, _engine.time() - downbeat + 0.05)
+	var downbeat: float = {Phase.LISTEN: _listen_start_engine, Phase.COUNT_IN: _phase_end}.get(phase, _sing_start_engine)
+	_schedule_clicks(downbeat, _engine.time() - downbeat + 0.05)   # the countdown adds its own
+
+
+## Turn the first play-through on or off. Off while it plays skips the rest of it.
+func set_hear_first(on: bool) -> void:
+	hear_first = on
+	if not on and phase == Phase.LISTEN and exercise.mode == Exercise.Mode.NOTES and _engine:
+		_engine.stop_kind(SynthEngine.Kind.VOICE)
+		_engine.stop_kind(SynthEngine.Kind.CLICK)
+		_enter(Phase.COUNT_IN, count_in_seconds())
+
+
+## Turn play-along on or off, mid-exercise too: off silences the melody now.
+func set_play_along(on: bool) -> void:
+	on = on and exercise.mode == Exercise.Mode.NOTES
+	if on == play_along:
+		return
+	play_along = on
+	if _engine == null or phase != Phase.SING or speakers_only():
+		return
+	if not on:
+		if exercise.reference != Exercise.Reference.ALONG:
+			_engine.stop_kind(SynthEngine.Kind.VOICE)
+		return
+	if exercise.reference != Exercise.Reference.ALONG:
+		_play_guide(_engine.time() - _sing_start_engine)
 
 
 ## Seconds since SING began (source clock), for drawing targets.
@@ -184,11 +218,21 @@ func speakers_only() -> bool:
 
 
 func _after_cadence() -> void:
-	if exercise.reference == Exercise.Reference.BEFORE 			or (exercise.reference == Exercise.Reference.ALONG and speakers_only()):
-		var len := _engine.sequence(reference, 1.0, _engine.time() + 0.1)
+	if listens_first():
+		_listen_start_engine = _engine.time() + 0.1
+		var len := _engine.sequence(reference, 1.0, _listen_start_engine)
+		if metronome and has_beat():
+			_schedule_clicks(_listen_start_engine, -0.01)
 		_enter(Phase.LISTEN, len + 0.3)
 	else:
 		_enter(Phase.COUNT_IN, count_in_seconds())
+
+
+## Whether the melody plays once before the learner sings.
+func listens_first() -> bool:
+	if not hear_first and exercise.mode == Exercise.Mode.NOTES:
+		return false
+	return exercise.reference == Exercise.Reference.BEFORE 			or (speakers_only() and (exercise.reference == Exercise.Reference.ALONG or play_along))
 
 
 func _begin_sing(source_now: float) -> void:
@@ -203,7 +247,7 @@ func _begin_sing(source_now: float) -> void:
 		_engine.set_drone(-1)
 		_enter(Phase.SING, length_seconds() + TAIL_SECONDS)
 		return
-	if exercise.reference == Exercise.Reference.ALONG:
+	if exercise.reference == Exercise.Reference.ALONG or play_along:
 		_play_guide()
 	if exercise.accompaniment:
 		_play_chords()
@@ -215,10 +259,12 @@ func _begin_sing(source_now: float) -> void:
 
 
 ## Guide voice; for the "fading guide" ensemble stage it gets quieter and stops.
-func _play_guide() -> void:
+func _play_guide(from := -1.0) -> void:
 	var fade := exercise.guide_fade
 	for i in targets.size():
 		var t: Dictionary = targets[i]
+		if t.start < from:
+			continue
 		var g := 0.22
 		if fade:
 			g *= clampf(1.0 - float(i) / maxf(1.0, targets.size() * 0.6), 0.0, 1.0)

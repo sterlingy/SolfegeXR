@@ -22,6 +22,9 @@ var _start_button: Button
 var _next_button: Button
 var _tempo_buttons: Array[Button] = []
 var _metronome: Button
+var _view: Button
+var _play_along: Button
+var _hear_first: Button
 var _countdown := 0             ## number last shown in the countdown
 var _announced := ""
 var _preview_targets: Array = []
@@ -90,20 +93,38 @@ func _build() -> void:
 		tempo_row.add_child(b)
 		_tempo_buttons.append(b)
 
-	_metronome = Button.new()
-	_metronome.toggle_mode = true
-	_metronome.custom_minimum_size = Vector2(0, 90)
-	_metronome.add_theme_font_size_override("font_size", 34)
-	_metronome.add_theme_color_override("font_pressed_color", UI.ACCENT)
-	_metronome.add_theme_color_override("font_hover_pressed_color", UI.ACCENT)
-	_metronome.button_pressed = App.profile.metronome
+	var options := UI.row(_col)
+	var options2 := UI.row(_col)
+	_view = _toggle_button(options, App.profile.sheet_view)
+	_view.toggled.connect(func(on: bool):
+		App.profile.sheet_view = on
+		App.profile.save()
+		_label_view()
+		_trace.view_sheet = on and _exercise().mode == Exercise.Mode.NOTES)
+	_label_view()
+	_hear_first = _toggle_button(options, App.profile.hear_first)
+	_hear_first.toggled.connect(func(on: bool):
+		App.profile.hear_first = on
+		App.profile.save()
+		if _session:
+			_session.set_hear_first(on)
+		_label_hear_first())
+	_label_hear_first()
+	_play_along = _toggle_button(options2, App.profile.play_along)
+	_play_along.toggled.connect(func(on: bool):
+		App.profile.play_along = on
+		App.profile.save()
+		if _session:
+			_session.set_play_along(on)
+		_label_play_along())
+	_label_play_along()
+	_metronome = _toggle_button(options2, App.profile.metronome)
 	_metronome.toggled.connect(func(on: bool):
 		App.profile.metronome = on
 		App.profile.save()
 		if _session:
 			_session.set_metronome(on)
 		_label_metronome())
-	_col.add_child(_metronome)
 	_label_metronome()
 
 	var actions := UI.row(_col)
@@ -111,6 +132,31 @@ func _build() -> void:
 	_start_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_next_button = UI.button(actions, "Next ›", _on_next)
 	_next_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+
+func _toggle_button(parent: Control, on: bool) -> Button:
+	var b := Button.new()
+	b.toggle_mode = true
+	b.custom_minimum_size = Vector2(0, 90)
+	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	b.add_theme_font_size_override("font_size", 34)
+	b.add_theme_color_override("font_pressed_color", UI.ACCENT)
+	b.add_theme_color_override("font_hover_pressed_color", UI.ACCENT)
+	b.button_pressed = on
+	parent.add_child(b)
+	return b
+
+
+func _label_view() -> void:
+	_view.text = "Sheet music" if _view.button_pressed else "Solfège lanes"
+
+
+func _label_hear_first() -> void:
+	_hear_first.text = "Hear it first: on" if _hear_first.button_pressed else "Hear it first: off"
+
+
+func _label_play_along() -> void:
+	_play_along.text = "Play along: on" if _play_along.button_pressed else "Play along: off"
 
 
 func _label_metronome() -> void:
@@ -135,9 +181,14 @@ func _load_exercise() -> void:
 	_trace.set_key(e.key)
 	# Sirens and slides have no beat to click.
 	_metronome.visible = e.mode == Exercise.Mode.NOTES
+	_view.visible = e.mode == Exercise.Mode.NOTES
+	_play_along.visible = e.mode == Exercise.Mode.NOTES
+	_hear_first.visible = e.mode == Exercise.Mode.NOTES
 	_trace.now_fraction = 0.3
 	_trace.history_seconds = 1.8
+	_trace.zoomed_out = false
 	_trace.clear()
+	_load_notation(e)
 	var preview := PracticeSession.new(e, App.profile, _tempo)
 	_preview_targets = preview.reference
 	if e.mode == Exercise.Mode.SIREN:
@@ -149,7 +200,26 @@ func _load_exercise() -> void:
 			lo = mini(lo, mini(n.midi, n.get("midi_end", n.midi)))
 			hi = maxi(hi, maxi(n.midi, n.get("midi_end", n.midi)))
 		_trace.fit_range(lo - 2, hi + 2)
+	# A still preview: the first notes wait just past the line until Start.
 	_trace.set_targets(preview.reference, App.pitch_source().now() + 1.0)
+	_trace.park(1.0)
+
+
+## The exercise as sheet music, in the learner's key (songs are already transposed).
+func _load_notation(e: Exercise) -> void:
+	if e.mode != Exercise.Mode.NOTES:
+		_trace.clear_notation()
+		_trace.view_sheet = false
+		return
+	var n := Notation.build(e.key, e.notes, e.base_for(App.profile), e.beats_per_measure, e.bar_offset_beats,
+		Notation.clef_for([App.profile.voice_low, App.profile.voice_high]))
+	var sung := Notation.key_name(e.key)
+	var header := "Key: %s" % sung
+	if e.original_key != null:
+		var printed := Notation.key_name(e.original_key)
+		header = "Printed in %s · sung in %s" % [printed, sung] if printed != sung else "Key: %s (as printed)" % sung
+	_trace.set_notation(n, 60.0 / e.tempo_bpm / _tempo, header, App.profile.sheet_syllables)
+	_trace.view_sheet = App.profile.sheet_view
 
 
 func _set_tempo(t: float) -> void:
@@ -177,6 +247,8 @@ func _on_start() -> void:
 	_session.finished.connect(_on_finished)
 	_trace.now_fraction = 0.3
 	_trace.history_seconds = 1.8
+	_trace.zoomed_out = false
+	_trace.set_results([])
 	_trace.clear()
 	_trace.clear_targets()
 	_result.text = ""
@@ -228,7 +300,8 @@ func _on_finished(results: Array[NoteResult]) -> void:
 	# Freeze and zoom out so the whole attempt stays visible over the targets.
 	_trace.now_fraction = 0.97
 	_trace.history_seconds = _session.length_seconds() + 0.6
-	_trace.queue_redraw()
+	_trace.zoomed_out = true
+	_trace.set_results(results)
 	_status.text = ""
 	_result.text = PracticeSession.summary(results, _exercise().key)
 	_start_button.text = "Again"

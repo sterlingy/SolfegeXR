@@ -73,6 +73,8 @@ static func build(analysis: SongAnalyzer.Result, profile: LearnerProfile) -> Cou
 	c.steps.append(backing)
 	if analysis.needs(Skills.Id.ENSEMBLE):
 		c.steps.append_array(_ensemble(analysis, c))
+	for e in c.steps:
+		e.original_key = analysis.key
 	return c
 
 

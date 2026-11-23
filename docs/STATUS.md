@@ -18,6 +18,7 @@ Last updated 19 November 2026. The full history is in `git log`.
 | Area | State |
 |---|---|
 | Pitch trace, scoring, feedback | Done |
+| Sheet music view (staff in the learner's key, voice overlaid, notes colored after singing) | Done; checked in desktop screenshots, not yet on a phone or in AR |
 | Range test, key setup, tempo control | Done |
 | Sirens and slides (pitch matching) | Done |
 | Core curriculum (10 skills), mastery, progress over days | Done; thresholds are defaults to tune |

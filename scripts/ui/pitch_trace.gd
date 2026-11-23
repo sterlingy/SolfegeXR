@@ -43,6 +43,17 @@ var _font: Font
 var _feedback := ""
 var _targets: Array = []   # {midi, start, duration} in the trace clock
 var show_feedback := true
+## Sheet music view: the exercise drawn on a staff, the sung line over it.
+var view_sheet := false:
+	set(v):
+		view_sheet = v
+		queue_redraw()
+## After an attempt: fit the whole attempt instead of scrolling.
+var zoomed_out := false
+var _sheet := SheetPainter.new()
+var _origin := 0.0
+var _scroll := 0.0     ## seconds dragged back while looking over an attempt
+var _park_lead := -1.0 ## >= 0: targets stay this many seconds ahead of "now" (not started)
 
 
 func _ready() -> void:
@@ -56,6 +67,7 @@ func set_key(k: MusicKey) -> void:
 
 
 func clear() -> void:
+	_scroll = 0.0
 	_points.clear()
 	_smoothed = NAN
 	queue_redraw()
@@ -63,6 +75,8 @@ func clear() -> void:
 
 ## Show target notes. `origin` is the trace-clock time of target start 0.
 func set_targets(targets: Array, origin: float) -> void:
+	_park_lead = -1.0
+	_origin = origin
 	_targets.clear()
 	for t in targets:
 		var tt := {midi = t.midi, start = origin + t.start, duration = t.duration, lyric = t.get("lyric", "")}
@@ -72,7 +86,54 @@ func set_targets(targets: Array, origin: float) -> void:
 	queue_redraw()
 
 
+## The exercise as sheet music (Notation.build), at `seconds_per_beat`.
+## `header` is the line above the staff ("Printed in E minor · sung in D minor").
+func set_notation(notation: Dictionary, seconds_per_beat: float, header := "", syllables := true) -> void:
+	_sheet.set_notation(notation, key, seconds_per_beat)
+	_sheet.header = header
+	_sheet.show_syllables = syllables
+	queue_redraw()
+
+
+func clear_notation() -> void:
+	_sheet.set_notation({}, key, 0.5)
+	queue_redraw()
+
+
+## Color each written note by how it went (NoteResult per target, in order).
+func set_results(results: Array) -> void:
+	_sheet.results = results
+	queue_redraw()
+
+
+func sheet_active() -> bool:
+	return view_sheet and _sheet.active()
+
+
+func sheet_origin() -> float:
+	return _origin
+
+
+## Hold the targets still, the first one `lead` seconds ahead of "now",
+## until the next set_targets / clear_targets (a preview before Start).
+func park(lead: float) -> void:
+	_park_lead = lead
+	_repark()
+
+
+func _repark() -> void:
+	if _park_lead < 0.0:
+		return
+	var d := (_now + _park_lead) - _origin
+	if absf(d) < 1e-6:
+		return
+	_origin += d
+	for t in _targets:
+		t.start += d
+
+
 func clear_targets() -> void:
+	_park_lead = -1.0
 	_targets.clear()
 	queue_redraw()
 
@@ -95,6 +156,7 @@ func high_midi() -> float:
 ## Advance the scroll clock even without new frames (keeps scrolling smooth).
 func set_now(t: float) -> void:
 	_now = maxf(_now, t)
+	_repark()
 	var cutoff := _now - maxf(history_seconds, keep_seconds) - 0.5
 	while _points.size() > 0 and _points[0].x < cutoff:
 		_points.pop_front()
@@ -179,15 +241,50 @@ func _set_feedback(text: String) -> void:
 
 
 func _y_of(midi: float) -> float:
+	if sheet_active():
+		return _sheet.y_of_midi(midi)
 	return remap(midi, low_midi(), high_midi(), size.y, 0.0)
 
 
+## x of "now". In the sheet view it stays clear of the clef and key signature.
+func _now_x() -> float:
+	if sheet_active() and not zoomed_out:
+		return maxf(size.x * now_fraction, _sheet.panel_w + _sheet.s * 2.0)
+	return size.x * now_fraction
+
+
 func _x_of(t: float) -> float:
-	var now_x := size.x * now_fraction
+	var now_x := _now_x()
+	if sheet_active():
+		if zoomed_out and _sheet.fits_whole:
+			return now_x - (_now - t) / history_seconds * (now_x - _sheet.panel_w)
+		return now_x - (_now - _scroll - t) / _sheet.spb * _sheet.px_per_beat
 	return now_x - (_now - t) / history_seconds * now_x
 
 
+## After an attempt that doesn't fit, drag the sheet music to look back over it.
+func _gui_input(event: InputEvent) -> void:
+	if not (sheet_active() and zoomed_out and not _sheet.fits_whole):
+		return
+	var dx := 0.0
+	if event is InputEventScreenDrag:
+		dx = event.relative.x
+	elif event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_LEFT:
+		dx = event.relative.x
+	if dx != 0.0:
+		_scroll = clampf(_scroll + dx / _sheet.px_per_beat * _sheet.spb, 0.0, history_seconds)
+		accept_event()
+		queue_redraw()
+
+
 func _draw() -> void:
+	if sheet_active():
+		_sheet.layout(self)
+		_sheet.draw_music(self)
+		_draw_trace()
+		_sheet.draw_panel(self)
+		_draw_now()
+		return
 	draw_rect(Rect2(Vector2.ZERO, size), background)
 	var font_size := int(clampf(size.y / span_semitones * 0.55, 22.0, 44.0))
 	var band_h := absf(_y_of(0.0) - _y_of(tolerance_cents / 100.0))
@@ -233,11 +330,21 @@ func _draw() -> void:
 			draw_string(_font, Vector2(x0 + 4, y + band_h + font_size * 0.9), t.lyric,
 					HORIZONTAL_ALIGNMENT_LEFT, maxf(x1 - x0, font_size * 3.0), int(font_size * 0.75), lyric_color)
 
-	var now_x := size.x * now_fraction
-	# "Now" marker: where a note should be sung. A soft glow with a bright core.
-	draw_line(Vector2(now_x, 0), Vector2(now_x, size.y), Color(now_color, 0.14), 12.0)
-	draw_line(Vector2(now_x, 0), Vector2(now_x, size.y), Color(now_color, 0.75), 3.0)
+	_draw_now()
+	_draw_trace()
 
+
+## "Now" marker: where a note should be sung. A soft glow with a bright core.
+func _draw_now() -> void:
+	if zoomed_out and sheet_active():
+		return
+	var now_x := _now_x()
+	var col := SheetPainter.NOW if sheet_active() else now_color
+	draw_line(Vector2(now_x, 0), Vector2(now_x, size.y), Color(col, 0.18 if sheet_active() else 0.14), 12.0)
+	draw_line(Vector2(now_x, 0), Vector2(now_x, size.y), Color(col, 0.85 if sheet_active() else 0.75), 3.0)
+
+
+func _draw_trace() -> void:
 	# Trace: break at gaps, at large jumps (octave folds) and at color changes.
 	var seg := PackedVector2Array()
 	var seg_color := line_color
@@ -266,7 +373,7 @@ func _draw() -> void:
 		if not is_nan(last.y) and _now - last.x < 0.15:
 			var pos := Vector2(_x_of(last.x), _y_of(last.y))
 			draw_circle(pos, 16.0, _color_for(int(last.z)))
-			draw_circle(pos, 7.0, background)
+			draw_circle(pos, 7.0, SheetPainter.PAPER if sheet_active() else background)
 
 
 func _flush(seg: PackedVector2Array, col: Color) -> void:
@@ -275,6 +382,10 @@ func _flush(seg: PackedVector2Array, col: Color) -> void:
 
 
 func _color_for(flags: int) -> Color:
+	if sheet_active():
+		if flags & 2:
+			return Color(SheetPainter.LINE, 0.4)
+		return SheetPainter.LINE_ON if flags & 1 else SheetPainter.LINE
 	if flags & 2:
 		return folded_color
 	return line_on_target if flags & 1 else line_color

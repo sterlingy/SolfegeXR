@@ -34,6 +34,8 @@ var parts: Array = []                ## ensemble: other parts as {name, targets}
 ## Song drills store pitches relative to this MIDI base (already transposed
 ## into the learner's voice). -1 = relative to the learner's home tonic.
 var fixed_base := -1
+## For song exercises: the key the song is printed in (before transposing).
+var original_key: MusicKey = null
 
 
 ## Add notes by scale degree (1-based like solfège teaching: 1 = do, 8 = do').
@@ -52,8 +54,12 @@ func add_degrees(degrees: Array, beats := 1.0) -> Exercise:
 func realize_for(profile: LearnerProfile, tempo_scale := -1.0) -> Array:
 	if tempo_scale < 0.0:
 		tempo_scale = profile.tempo_scale
-	var base := fixed_base if fixed_base >= 0 else profile.home_tonic(key.tonic_pc)
-	return realize(base, tempo_scale)
+	return realize(base_for(profile), tempo_scale)
+
+
+## MIDI note that `semis` 0 means for this learner.
+func base_for(profile: LearnerProfile) -> int:
+	return fixed_base if fixed_base >= 0 else profile.home_tonic(key.tonic_pc)
 
 
 ## Targets given an explicit base (home tonic) MIDI note. Gliding notes get

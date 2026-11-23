@@ -24,6 +24,8 @@ func setup(_args: Dictionary) -> void:
 	syl.add_child(opt)
 	UI.toggle(syl, "Chromatic syllables (fi, te…)", p.chromatic_enabled,
 		func(on): _apply(func(): p.chromatic_enabled = on))
+	UI.toggle(syl, "Solfège under the sheet music", p.sheet_syllables,
+		func(on): _apply(func(): p.sheet_syllables = on))
 
 	var mic := UI.card(col)
 	UI.label(mic, "Microphone", 44)

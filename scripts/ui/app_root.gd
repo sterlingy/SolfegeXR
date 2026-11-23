@@ -6,6 +6,7 @@ extends Control
 ##   -- --autostart                 practice screens start right away
 ##   -- --screenshot=path.png       save a screenshot after --wait seconds, then quit
 ##   -- --wait=4
+##   -- --fake-update               show the "new version" bar (desktop check)
 
 
 var _update_bar: Button
@@ -25,6 +26,8 @@ func _ready() -> void:
 	for a in args:
 		if a == "--demo":
 			App.use_demo_singer = true
+		elif a == "--fake-update":
+			_on_pwa_update.call_deferred()
 		elif a == "--autostart":
 			App.dev_autostart = true
 		elif a.begins_with("--screen="):
@@ -75,15 +78,23 @@ func _ready() -> void:
 func _on_pwa_update() -> void:
 	if _update_bar:
 		return
+	# Its own canvas layer: screens opened later are added after it, and
+	# z_index only changes drawing, so they'd catch its taps otherwise.
+	var layer := CanvasLayer.new()
+	layer.layer = 10
+	add_child(layer)
 	var holder := MarginContainer.new()
 	holder.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	holder.offset_top = -170
-	holder.z_index = 100
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for side in ["left", "right", "bottom"]:
 		holder.add_theme_constant_override("margin_" + side, UI.GUTTER)
-	add_child(holder)
+	layer.add_child(holder)
 	_update_bar = UI.button(holder, "A new version is ready. Tap to update.",
-		func(): JavaScriptBridge.pwa_update(), true)
+		func():
+			print("update bar tapped")
+			if OS.has_feature("web"):
+				JavaScriptBridge.pwa_update(), true)
 	_update_bar.add_theme_font_size_override("font_size", 38)
 
 

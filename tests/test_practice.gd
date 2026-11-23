@@ -244,3 +244,153 @@ func test_metronome_can_be_turned_on_mid_song() -> void:
 	s.set_metronome(false)
 	engine.render(4800)
 	assert_eq(engine._voices.filter(func(v): return v.kind == SynthEngine.Kind.CLICK and v.start / engine.rate < engine.time()).size(), 0, "silenced")
+
+
+## Runs an exercise; returns [saw LISTEN, peak while singing, guide notes during SING].
+func _run_play_along(headphones: bool, play_along: bool) -> Array:
+	var profile := LearnerProfile.new()
+	profile.has_headphones = headphones
+	profile.play_along = play_along
+	var ex := Curriculum.exercises_for(Skills.Id.STEPS, 0)[0]
+	ex.reference = Exercise.Reference.NONE
+	ex.drone = false
+	var engine := SynthEngine.new(48000.0)
+	var s := PracticeSession.new(ex, profile, 1.0)
+	s.play_cadence = false
+	var saw_listen := [false]
+	s.phase_changed.connect(func(p): if p == PracticeSession.Phase.LISTEN: saw_listen[0] = true)
+	s.start(engine)
+	var peak := 0.0
+	var t := 0.0
+	while s.phase != PracticeSession.Phase.RESULT and t < 30.0:
+		var block := engine.render(800)
+		if s.phase == PracticeSession.Phase.SING:
+			for v in block:
+				peak = maxf(peak, absf(v))
+		s.update([] as Array[PitchFrame], engine.time())
+		t += 800 / 48000.0
+	return [saw_listen[0], peak]
+
+
+func test_play_along_with_headphones_plays_while_singing() -> void:
+	var r := _run_play_along(true, true)
+	assert_false(r[0], "no extra listening pass")
+	assert_true(r[1] > 0.05, "melody plays with the singer: %s" % r[1])
+
+
+func test_play_along_without_headphones_plays_first_then_stays_quiet() -> void:
+	var r := _run_play_along(false, true)
+	assert_true(r[0], "melody plays once first, while the music scrolls")
+	assert_true(r[1] < 0.01, "quiet while singing so the mic hears only the singer: %s" % r[1])
+
+
+func test_without_play_along_nothing_extra_plays() -> void:
+	var r := _run_play_along(true, false)
+	assert_false(r[0])
+	assert_true(r[1] < 0.01, "%s" % r[1])
+
+
+func test_metronome_ticks_while_the_melody_plays_first() -> void:
+	var profile := LearnerProfile.new()
+	profile.metronome = true
+	var ex := Curriculum.exercises_for(Skills.Id.STEPS, 0)[0]
+	ex.reference = Exercise.Reference.BEFORE
+	var engine := SynthEngine.new(48000.0)
+	var s := PracticeSession.new(ex, profile, 1.0)
+	s.play_cadence = false
+	s.start(engine)
+	assert_eq(s.phase, PracticeSession.Phase.LISTEN)
+	var ticks := engine._voices.filter(func(v): return v.kind == SynthEngine.Kind.CLICK)
+	assert_true(ticks.size() >= int(s.length_seconds() / s.beat_seconds()) - 1, "ticks with the melody: %d" % ticks.size())
+	# Then the countdown adds its own, with no doubles.
+	while s.phase != PracticeSession.Phase.COUNT_IN:
+		engine.render(800)
+		s.update([] as Array[PitchFrame], engine.time())
+	var starts := {}
+	for v in engine._voices:
+		if v.kind == SynthEngine.Kind.CLICK:
+			assert_false(starts.has(v.start), "no doubled tick")
+			starts[v.start] = true
+
+
+func test_metronome_turned_on_while_listening_ticks_once() -> void:
+	var profile := LearnerProfile.new()
+	var ex := Curriculum.exercises_for(Skills.Id.STEPS, 0)[0]
+	ex.reference = Exercise.Reference.BEFORE
+	var engine := SynthEngine.new(48000.0)
+	var s := PracticeSession.new(ex, profile, 1.0)
+	s.play_cadence = false
+	s.start(engine)
+	engine.render(4800)
+	s.set_metronome(true)
+	while s.phase != PracticeSession.Phase.SING:
+		engine.render(800)
+		s.update([] as Array[PitchFrame], engine.time())
+	var starts := {}
+	for v in engine._voices:
+		if v.kind == SynthEngine.Kind.CLICK:
+			assert_false(starts.has(v.start), "no doubled tick")
+			starts[v.start] = true
+	assert_true(starts.size() > 4)
+
+
+func test_play_along_off_mid_song_silences_the_melody() -> void:
+	var profile := LearnerProfile.new()
+	profile.has_headphones = true
+	profile.play_along = true
+	var ex := Curriculum.exercises_for(Skills.Id.STEPS, 0)[0]
+	ex.reference = Exercise.Reference.NONE
+	ex.drone = false
+	var engine := SynthEngine.new(48000.0)
+	var s := PracticeSession.new(ex, profile, 1.0)
+	s.play_cadence = false
+	s.start(engine)
+	while s.phase != PracticeSession.Phase.SING:
+		engine.render(800)
+		s.update([] as Array[PitchFrame], engine.time())
+	engine.render(9600)
+	s.set_play_along(false)
+	engine.render(9600)
+	var peak := 0.0
+	for v in engine.render(24000):
+		peak = maxf(peak, absf(v))
+	assert_true(peak < 0.01, "quiet after turning it off: %s" % peak)
+	s.set_play_along(true)
+	peak = 0.0
+	for v in engine.render(48000):
+		peak = maxf(peak, absf(v))
+	assert_true(peak > 0.05, "back on for the rest: %s" % peak)
+
+
+func test_hear_it_first_off_goes_straight_to_the_countdown() -> void:
+	var profile := LearnerProfile.new()
+	profile.hear_first = false
+	var ex := Curriculum.exercises_for(Skills.Id.STEPS, 0)[0]
+	ex.reference = Exercise.Reference.BEFORE
+	var s := PracticeSession.new(ex, profile, 1.0)
+	s.play_cadence = false
+	s.start(SynthEngine.new(48000.0))
+	assert_eq(s.phase, PracticeSession.Phase.COUNT_IN)
+
+
+func test_hear_it_first_off_while_listening_skips_the_rest() -> void:
+	var profile := LearnerProfile.new()
+	profile.metronome = true
+	var ex := Curriculum.exercises_for(Skills.Id.STEPS, 0)[0]
+	ex.reference = Exercise.Reference.BEFORE
+	ex.drone = false
+	var engine := SynthEngine.new(48000.0)
+	var s := PracticeSession.new(ex, profile, 1.0)
+	s.play_cadence = false
+	s.start(engine)
+	assert_eq(s.phase, PracticeSession.Phase.LISTEN)
+	engine.render(9600)
+	s.set_hear_first(false)
+	assert_eq(s.phase, PracticeSession.Phase.COUNT_IN)
+	engine.render(4800)  # let the stopped notes fade
+	var melody := 0.0
+	for v in engine._voices:
+		if v.kind == SynthEngine.Kind.VOICE and v.released_at < 0:
+			melody += 1
+	assert_eq(melody, 0.0, "the rest of the melody won't play")
+	assert_true(s.count_in_left() > 2.5, "a full countdown")

@@ -48,6 +48,7 @@ Screens (`scripts/ui/screens/*`) only show state and pass taps along. All the lo
 
 ## Music and songs: `scripts/music/`, `scripts/song/`
 
+- `Notation` (`scripts/music/notation.gd`) turns an exercise into staff notation in the learner's key: key signature (flats on a tie), spelling (chromatic notes follow di/fi/si raised, me/te lowered), clef from the learner's range, note values split and tied at bar lines, beams, accidentals per bar, and the continuous staff position of a sung pitch.
 - `MusicKey` is tonic plus mode. It converts between pitches and **scale degrees** (the neutral stored form) and renders syllables with the two toggles (La/Do-based minor, chromatic).
 - The readers produce a format-neutral `Song` (parts, notes in beats, lyrics with syllabic joins, breath marks).
 - `KeyFinder` uses the key signature plus a Krumhansl-Schmuckler match, with a bonus for the final note.
@@ -72,7 +73,7 @@ Screens (`scripts/ui/screens/*`) only show state and pass taps along. All the lo
 ## App shell: `scripts/app.gd`, `scripts/ui/`
 
 - `App` (autoload) owns the profile, the pitch source, the synth, the song catalog and navigation (`App.go(name, args)`, `App.back()`).
-- Screens are built in code with the `UI` helpers for a consistent phone-first look. `PitchTrace` is the custom-drawn lanes, target bars (including glides and lyrics) and the sung line.
+- Screens are built in code with the `UI` helpers for a consistent phone-first look. `PitchTrace` is the custom-drawn lanes, target bars (including glides and lyrics) and the sung line. With `view_sheet` on it draws the exercise as a scrolling staff instead (`SheetPainter`, using the Noto Music font for clefs, rests and accidentals), keeping the same clock so the sung line lands on the noteheads.
 - `scenes/main.tscn` is the original sandbox, now **Free sing**.
 
 ## XR: `scripts/xr/`, `addons/`
