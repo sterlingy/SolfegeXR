@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Solfège Master XR hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&display=block" rel="stylesheet">
+<style>
+  @font-face { font-family: "Noto Music"; src: url("../build/hero/NotoMusic-Regular.ttf"); }
+  :root {
+    --bg: #14151f; --card: #1f2130; --card-hi: #2a2d42; --text: #f1f1f5;
+    --muted: rgba(255,255,255,.62); --accent: #7fd3ff; --good: #8cf0a6; --warm: #ffd27a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); }
+  body { font-family: Nunito, "Segoe UI", sans-serif; color: var(--text); position: relative; }
+
+  /* soft light */
+  .glow { position: absolute; border-radius: 50%; filter: blur(120px); }
+  .g1 { width: 900px; height: 900px; right: -120px; top: 40px; background: rgba(127,211,255,.16); }
+  .g2 { width: 700px; height: 700px; left: -200px; bottom: -320px; background: rgba(140,240,166,.10); }
+  .g3 { width: 520px; height: 520px; left: 520px; top: -260px; background: rgba(255,210,122,.08); }
+
+  svg.bgsvg { position: absolute; inset: 0; }
+
+  .copy { position: absolute; left: 132px; top: 0; bottom: 0; width: 900px;
+          display: flex; flex-direction: column; justify-content: center; }
+  .eyebrow { font-weight: 800; letter-spacing: .22em; font-size: 22px; color: var(--accent);
+             text-transform: uppercase; margin-bottom: 30px; }
+  h1 { font-weight: 900; font-size: 124px; line-height: .98; letter-spacing: -.02em; }
+  h1 .xr { color: var(--accent); }
+  .tag { margin-top: 38px; font-size: 46px; font-weight: 700; line-height: 1.2; }
+  .tag em { font-style: normal; color: var(--good); }
+  .sub { margin-top: 22px; font-size: 27px; font-weight: 500; color: var(--muted); line-height: 1.45; max-width: 760px; }
+  .chips { margin-top: 46px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .chip { padding: 14px 26px; border-radius: 999px; background: var(--card); border: 1px solid var(--card-hi);
+          font-size: 24px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 12px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+
+  .phone { position: absolute; width: 452px; height: 829px; border-radius: 58px; padding: 52px 16px 30px;
+           background: linear-gradient(160deg, #3a3d55, #191a26 45%, #2b2e44);
+           box-shadow: 0 60px 120px rgba(0,0,0,.55), 0 0 0 2px rgba(255,255,255,.06) inset; }
+  .phone img { width: 100%; height: 100%; object-fit: cover; object-position: top; border-radius: 10px 10px 34px 34px; display: block; }
+  .phone::after { content: ""; position: absolute; top: 18px; left: 50%; width: 110px; height: 20px;
+                  margin-left: -55px; border-radius: 20px; background: #0b0b12; }
+  .back  { left: 1150px; top: 150px; transform: rotate(-8deg); filter: brightness(.72) saturate(.9); }
+  .front { left: 1390px; top: 118px; transform: rotate(4deg); }
+
+  .bubble { position: absolute; left: 1220px; top: 968px; padding: 18px 28px; border-radius: 22px;
+            background: rgba(31,33,48,.94); border: 1px solid rgba(140,240,166,.45);
+            font-size: 26px; font-weight: 800; box-shadow: 0 20px 50px rgba(0,0,0,.45); transform: rotate(-2deg); }
+  .bubble span { color: var(--good); }
+</style>
+</head>
+<body>
+  <div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div>
+
+  <svg class="bgsvg" width="1920" height="1080" viewBox="0 0 1920 1080">
+    <defs>
+      <linearGradient id="trace" x1="0" x2="1" y1="0" y2="0">
+        <stop offset="0"   stop-color="#8cf0a6" stop-opacity="0"/>
+        <stop offset=".18" stop-color="#8cf0a6" stop-opacity=".55"/>
+        <stop offset=".7"  stop-color="#8cf0a6" stop-opacity=".9"/>
+        <stop offset="1"   stop-color="#7fd3ff" stop-opacity="1"/>
+      </linearGradient>
+      <filter id="soft"><feGaussianBlur stdDeviation="6"/></filter>
+    </defs>
+    <!-- solfège lanes, like the app's practice view -->
+    <g id="lanes"></g>
+    <!-- the sung line: do, re, mi, fa, sol, with a little vibrato -->
+    <path id="sung" fill="none" stroke="url(#trace)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <path id="sungGlow" fill="none" stroke="url(#trace)" stroke-width="18" stroke-opacity=".35" filter="url(#soft)"/>
+    <circle id="now" r="13" fill="none" stroke="#7fd3ff" stroke-width="6"/>
+  </svg>
+
+  <div class="copy">
+    <div class="eyebrow">Movable-do solfège · live pitch feedback</div>
+    <h1>Solfège<br>Master <span class="xr">XR</span></h1>
+    <div class="tag">Learn to sing in key.<br><em>Even if you think you can't.</em></div>
+    <div class="sub">Sing into your microphone and watch your voice land on the note. Every song moves into your range.</div>
+    <div class="chips">
+      <div class="chip"><span class="dot" style="background:var(--good)"></span>Pitch you can see</div>
+      <div class="chip"><span class="dot" style="background:var(--warm)"></span>Do, re, mi to real songs</div>
+      <div class="chip"><span class="dot" style="background:var(--accent)"></span>Phone · Web · XR glasses</div>
+    </div>
+  </div>
+
+  <div class="phone back"><img src="screen_sheet.png" alt=""></div>
+  <div class="phone front"><img src="screen_lanes.png" alt=""></div>
+  <div class="bubble"><span>You landed it!</span></div>
+
+<script>
+  // Lanes: one band per scale degree, labelled faintly at the right edge.
+  const syl = ["do","re","mi","fa","sol","la","ti","do","re"];
+  const step = 98, base = 1010;
+  const g = document.getElementById("lanes");
+  syl.forEach((s, i) => {
+    const y = base - i * step;
+    g.insertAdjacentHTML("beforeend",
+      `<rect x="0" y="${y - 22}" width="1920" height="44" fill="#ffffff" fill-opacity="${i % 2 ? .018 : .03}"/>` +
+      `<line x1="0" x2="1920" y1="${y}" y2="${y}" stroke="#ffffff" stroke-opacity="${s === "do" ? .12 : .05}" stroke-width="2"/>` +
+      `<text x="1890" y="${y + 9}" text-anchor="end" font-family="Nunito" font-weight="800" font-size="26" fill="#ffffff" fill-opacity=".10">${s}</text>`);
+  });
+  // A rising phrase under the text: do do re mi fa sol, each held with vibrato,
+  // with the little scoop at each onset the app forgives.
+  const notes = [0, 1, 2, 2, 3, 4], w = 178, x0 = -40, tstep = 24, tbase = 1046;
+  let d = "", x = x0;
+  notes.forEach((n, i) => {
+    const y = tbase - n * tstep;
+    const prev = i ? tbase - notes[i - 1] * tstep : y + 20;
+    d += i ? ` C ${x - 10} ${prev}, ${x + 6} ${y + 14}, ${x + 22} ${y + 3}` : `M ${x} ${prev}`;
+    for (let t = x + 22; t <= x + w - 16; t += 4) {
+      const v = Math.sin((t - x) / 11) * 4 * Math.min(1, (t - x) / 60);
+      d += ` L ${t} ${y + v}`;
+    }
+    x += w;
+  });
+  document.getElementById("sung").setAttribute("d", d);
+  document.getElementById("sungGlow").setAttribute("d", d);
+  const now = document.getElementById("now");
+  now.setAttribute("cx", x - 16); now.setAttribute("cy", tbase - 4 * tstep);
+</script>
+</body>
+</html>

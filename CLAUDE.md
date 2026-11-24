@@ -7,8 +7,8 @@ Teaches adults who believe they can't sing to sing a song in key, using **movabl
 ## Working with this user
 - UE5 expert, Godot beginner: explain Godot concepts briefly, by UE5 comparison when useful.
 - Discuss and agree a plan before large changes.
-- Commit at checkpoints, only after the user approves the work. The remote is a private GitHub repo (`origin`); push only when the user asks.
-- Public home: https://sterling.shivoolabs.com/apps/solfegexr/ on the user's own Sterling's Lab server (repo `Y:\_Developer\Sterling\SterlingLabs\sterlings-lab`; never edit it from here). Deploy with `tools/lab/deploy_lab.sh` (docs/HOSTING.md), only when asked.
+- Commit at checkpoints, only after the user approves the work. The remote is the public GitHub repo `sterlingy/SolfegeXR` (`origin`); push only when the user asks.
+- Public: https://sterlingy.github.io/SolfegeXR/ (web + WebAR), published from this PC with `tools/pages/publish_pages.sh` to the `gh-pages` branch (docs/HOSTING.md), only when asked. Its project page is on the user's Sterling's Lab site, which has its own session; don't edit that site from here.
 
 ## Product principles
 - Tone is "you're new at this," never "you're bad at this." No red X; show "a little low, slide up."
