@@ -2,7 +2,7 @@
 
 ## Public home: Sterling's Lab
 
-The app's permanent address is **https://sterling.shivoolabs.com/apps/solfege/**, on Sterling's Lab, the studio owner's own server for all their projects (repo `Y:\_Developer\Sterling\SterlingLabs\sterlings-lab`). The Lab's homepage lists it, using `sterlings-app.json` at this repo's root: a `static` app whose files are in `dist/`.
+The app's permanent address is **https://sterling.shivoolabs.com/apps/solfegexr/**, on Sterling's Lab, the studio owner's own server for all their projects (repo `Y:\_Developer\Sterling\SterlingLabs\sterlings-lab`). The Lab's homepage lists it, using `sterlings-app.json` at this repo's root: a `static` app whose files are in `dist/`.
 
 ```
 STERLINGS_SSH_KEY=/path/to/lab_deploy_key bash tools/lab/deploy_lab.sh              # export, then deploy

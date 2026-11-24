@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Deploy the web build to Sterling's Lab: https://sterling.shivoolabs.com/apps/solfege/
+# Deploy the web build to Sterling's Lab: https://sterling.shivoolabs.com/apps/solfegexr/
 #   STERLINGS_SSH_KEY=/path/to/deploy_key bash tools/lab/deploy_lab.sh [--no-export]
 # Needs Bun (runs the Lab's self-deploy script, tools/lab/deploy.ts, copied
 # unchanged from the Lab repo). That script uploads its whole working folder,
