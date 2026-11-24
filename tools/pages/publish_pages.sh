@@ -28,9 +28,10 @@ for page in manual privacy; do
   cp -r "site/$page/." "build/public/$page/"
 done
 
-SITE="$ROOT/build/pages"
-rm -rf "$SITE"
-mkdir -p "$SITE"
+# Build the gh-pages commit in a local temp folder: Git refuses a new repo on
+# the network share ("dubious ownership").
+SITE="$(mktemp -d)"
+trap 'rm -rf "$SITE"' EXIT
 cp -r build/public/. "$SITE/"
 touch "$SITE/.nojekyll"   # serve files as they are, no Jekyll processing
 
