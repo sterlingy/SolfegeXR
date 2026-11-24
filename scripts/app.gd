@@ -20,7 +20,14 @@ var _screen: Control
 var _history: Array = []         ## [[name, args], ...] for Back
 
 
+## The brand name, for window and browser-tab titles. The project's
+## config/name stays "SolfegeApp" because it names the save-data folder.
+const DISPLAY_NAME := "Solfège Master XR"
+
+
 func _ready() -> void:
+	# Deferred: Godot sets the title from config/name after autoloads are ready.
+	DisplayServer.window_set_title.call_deferred(DISPLAY_NAME)
 	UI.install_music_font()
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--profile="):

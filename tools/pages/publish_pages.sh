@@ -22,6 +22,7 @@ if [ "${1:-}" != "--no-export" ]; then
   echo "Exporting release web build..."
   "$GODOT" --headless --path . --import >/dev/null 2>&1 || true
   "$GODOT" --headless --path . --export-release "Web" build/public/index.html >build/pages_export.log 2>&1
+  bash tools/web/brand_build.sh build/public
 fi
 for page in manual privacy; do
   mkdir -p "build/public/$page"
