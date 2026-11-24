@@ -1,5 +1,22 @@
 # Sharing builds with testers over the Internet
 
+## Public home: Sterling's Lab
+
+The app's permanent address is **https://sterling.shivoolabs.com/apps/solfege/**, on Sterling's Lab, the studio owner's own server for all their projects (repo `Y:\_Developer\Sterling\SterlingLabs\sterlings-lab`). The Lab's homepage lists it, using `sterlings-app.json` at this repo's root: a `static` app whose files are in `dist/`.
+
+```
+STERLINGS_SSH_KEY=/path/to/lab_deploy_key bash tools/lab/deploy_lab.sh              # export, then deploy
+STERLINGS_SSH_KEY=/path/to/lab_deploy_key bash tools/lab/deploy_lab.sh --no-export  # deploy the current build/public
+```
+
+- Needs Bun and the Lab's deploy key. That key can manage every app on the Lab, so keep it off shared drives.
+- `tools/lab/deploy.ts` is the Lab's self-deploy script, copied unchanged from its `deploy/self-deploy/`. When the Lab updates it, copy it again.
+- That script uploads its whole working folder. So `deploy_lab.sh` runs it from `build/lab/`, which holds only the manifest and `dist/` (a copy of `build/public`), not the whole Godot project.
+- Commit before deploying: a clean checkout records its commit with the release on the server.
+- The Lab serves HTTPS, so the mic works. `?diag=1` reports go nowhere there; use the tunnel below for diagnostics.
+
+The quick tunnel below is still useful for test builds that shouldn't go public yet.
+
 During development the web build is served from the studio PC through a **Cloudflare quick tunnel**:
 
 ```
