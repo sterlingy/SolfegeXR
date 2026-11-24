@@ -57,7 +57,7 @@ func _ready() -> void:
 		for k in c.steps.size():
 			if c.steps[k].title == cs[2]:
 				idx = k
-		App.go("practice", {exercises = c.steps, index = idx, title = c.song.song.title})
+		App.go("practice", {exercises = c.steps, index = idx, title = c.title()})
 	elif screen.begins_with("course:"):
 		App.go("home", {}, false)
 		App.go("course", {song_id = screen.trim_prefix("course:")})

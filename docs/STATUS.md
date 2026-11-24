@@ -1,6 +1,6 @@
 # Status: Solfège Master XR
 
-Last updated 19 November 2026. The full history is in `git log`.
+Last updated 23 November 2026. The full history is in `git log`.
 
 ## Platforms
 
@@ -24,6 +24,7 @@ Last updated 19 November 2026. The full history is in `git log`.
 | Core curriculum (10 skills), mastery, progress over days | Done; thresholds are defaults to tune |
 | 11 curated songs | Done, but melodies 2–10 are drafts to check ([SONGS.md](SONGS.md)); Carol is an original layering, not Leontovych's score |
 | Song import (MusicXML, MIDI), song courses | Done |
+| Choosing your part (voice) in a song: every voice of a score, including two-staff SATB, with the closest one marked | Done; God Rest Ye has S, A, T, B from the scan. Checked in desktop screenshots, not on a phone |
 | Lyrics display | Done; no built-in songs have lyrics yet |
 | Backing track (chords follow the melody) | Done; needs headphones |
 | Ensemble stages (guide, fading guide, other parts) | Basic version done; needs headphones |

@@ -23,6 +23,7 @@ class AnalyzedNote:
 
 class Result:
 	var song: Song
+	var part: Song.Part              ## the line being learned (a voice of the song)
 	var key: MusicKey
 	var notes: Array[SongAnalyzer.AnalyzedNote] = []
 	var phrases: Array[Vector2i] = []   ## [first, last] note indices (inclusive)
@@ -84,7 +85,10 @@ static func analyze(song: Song, part: Song.Part = null) -> Result:
 		part = song.melody()
 	var r := Result.new()
 	r.song = song
-	r.key = KeyFinder.find(song, part)
+	r.part = part
+	# The key comes from the melody: an inner voice often ends off the tonic
+	# (the tenor of a hymn in E minor ends on G), but it's sung in the same key.
+	r.key = KeyFinder.find(song, song.melody())
 
 	# Notes with degrees; phrase breaks from rests, breath marks, line ends.
 	var break_before := false

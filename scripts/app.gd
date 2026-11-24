@@ -166,12 +166,36 @@ func song_entry(id: String) -> Dictionary:
 	return {}
 
 
+## The song analysed for the part this learner sings: the one they picked,
+## else the melody.
 func song_analysis(id: String) -> SongAnalyzer.Result:
 	var entry := song_entry(id)
 	if entry.is_empty():
 		return null
 	var song := SongLibrary.parse_file(entry.file)
-	return SongAnalyzer.analyze(song) if song else null
+	if song == null:
+		return null
+	return SongAnalyzer.analyze(song, part_for(song, id, profile))
+
+
+## Which voice of `song` the learner sings: their saved choice, else the
+## melody (the tune people know; a lone bass line is a choice, not a default).
+static func part_for(song: Song, id: String, p: LearnerProfile) -> Song.Part:
+	var chosen := song.part_named(p.song_parts.get(id, ""))
+	return chosen if chosen != null else song.melody()
+
+
+## The part whose written range sits closest to the learner's voice (a bass
+## gets the bass line); ties go to the earlier part. Shown as a suggestion.
+static func best_fit_part(song: Song, p: LearnerProfile) -> Song.Part:
+	var best: Song.Part = null
+	var best_shift := 999
+	for part in song.singable_parts():
+		var shift := absi(SongAnalyzer.analyze(song, part).transposition_for(p.voice_low, p.voice_high))
+		if shift < best_shift:
+			best = part
+			best_shift = shift
+	return best if best != null else song.melody()
 
 
 func _notification(what: int) -> void:

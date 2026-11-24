@@ -26,6 +26,13 @@ class Course:
 	var skills_to_learn: Array[Skills.Id] = []
 	var steps: Array[Exercise] = []
 
+	## "God Rest You Merry, Gentlemen · Tenor" when the song has several voices.
+	func title() -> String:
+		var t := song.song.title
+		if song.song.singable_parts().size() > 1 and song.part != null:
+			t += " · " + song.part.name
+		return t
+
 
 static func build(analysis: SongAnalyzer.Result, profile: LearnerProfile) -> Course:
 	var c := Course.new()
@@ -148,8 +155,8 @@ static func _ensemble(a: SongAnalyzer.Result, c: Course) -> Array[Exercise]:
 		e.guide_fade = i == 3
 		e.needs_headphones = true
 		if i >= 4:
-			for p in a.song.parts:
-				if p == a.song.melody():
+			for p in a.song.singable_parts():
+				if p == a.part:
 					continue
 				var other := SongAnalyzer.analyze(a.song, p)
 				e.parts.append({name = p.name, targets = other.targets(c.transpose)})

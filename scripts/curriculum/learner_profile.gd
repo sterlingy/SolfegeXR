@@ -20,6 +20,7 @@ var sheet_view := false          ## practice shows sheet music instead of solfè
 var sheet_syllables := true      ## solfège under the notes in the sheet music view
 var metronome := false         ## click the beat during the count-in and singing
 var mic_device_id := ""        ## chosen input ("" = browser default)
+var song_parts := {}           ## song id -> name of the part (voice) this learner sings
 var onboarded := false
 var skills := {}               ## Skills.Id -> SkillProgress
 var rules := MasteryRules.new()
@@ -85,7 +86,7 @@ func to_dict() -> Dictionary:
 	return {version = VERSION, voice_low = voice_low, voice_high = voice_high,
 		range_tested = range_tested, minor_syllables = int(minor_syllables),
 		chromatic_enabled = chromatic_enabled, has_headphones = has_headphones,
-		tempo_scale = tempo_scale, metronome = metronome, sheet_view = sheet_view, play_along = play_along, hear_first = hear_first, sheet_syllables = sheet_syllables, onboarded = onboarded, mic_device_id = mic_device_id, skills = sk}
+		tempo_scale = tempo_scale, metronome = metronome, sheet_view = sheet_view, play_along = play_along, hear_first = hear_first, sheet_syllables = sheet_syllables, onboarded = onboarded, mic_device_id = mic_device_id, song_parts = song_parts, skills = sk}
 
 
 static func from_dict(d: Dictionary) -> LearnerProfile:
@@ -104,6 +105,10 @@ static func from_dict(d: Dictionary) -> LearnerProfile:
 	p.sheet_syllables = bool(d.get("sheet_syllables", true))
 	p.onboarded = bool(d.get("onboarded", false))
 	p.mic_device_id = str(d.get("mic_device_id", ""))
+	var sp = d.get("song_parts", {})
+	if sp is Dictionary:
+		for id in sp:
+			p.song_parts[str(id)] = str(sp[id])
 	var sk: Dictionary = d.get("skills", {})
 	for name in sk:
 		if Skills.Id.has(name):

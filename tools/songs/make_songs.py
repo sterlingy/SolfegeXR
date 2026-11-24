@@ -126,15 +126,35 @@ SONGS.append(dict(
 SONGS.insert(len(SONGS) - 1, dict(
     id="12_god_rest_you_merry", title="God Rest You Merry, Gentlemen", fifths=1, mode="minor",
     time=(4, 4), tempo=160, pickup=1, confidence="high",
-    note="E minor; a second minor-key song. Soprano line read from the Open Hymnal 2006 score "
+    note="E minor; a second minor-key song. All four voices read from the Open Hymnal 2006 score "
          "(Stainer's 1918 setting, public domain). The second \"comfort and joy;\" ends on A as printed; "
          "the familiar tune sings a low D there.",
-    parts=[("Melody", """
+    parts=[
+        ("Soprano", """
         E4 | E4 B4 B4 A4 | G4 F#4 E4 D4 | E4 F#4 G4 A4 | B4h., E4 |
         E4 B4 B4 A4 | G4 F#4 E4 D4 | E4 F#4 G4 A4 | B4h rq B4 |
         C5 A4 B4 C5 | D5 E5 B4 A4 | G4 E4 F#4 G4 | A4h, G4 A4 |
         B4h C5 B4 | B4 A4 G4 F#4 | E4h, G4e F#4e E4 | A4h, G4 A4 |
-        B4 C5 D5 E5 | B4 A4 G4 F#4 | E4h. |""")]))
+        B4 C5 D5 E5 | B4 A4 G4 F#4 | E4h. |"""),
+        ("Alto", """
+        E4 | E4 G4 F#4 D#4 | E4 D4 C4 B3 | E4 D#4 E4 E4 | D#4h., E4 |
+        E4 G4 F#4 D#4 | E4 D4 C4 B3 | E4 D#4 E4 E4 | D#4h rq E4 |
+        E4 D4 D4 G4 | F4 E4 D4 D#4 | E4 C#4 D4 G4 | F#4h, G4 D4 |
+        D4h E4 D4 | G4 F#4 E4 D#4 | E4h, B3e B3e C#4 | D4h, E4 F#4 |
+        G4h G4 G4 | G4 F#4 E4 D#4 | E4h. |"""),
+        ("Tenor", """
+        E3 | G3 E3 F#3 B3 | B3 B3 G3 G3 | G3 B3 B3 E3 | F#3h., E3 |
+        G3 E3 F#3 B3 | B3h G3 G3 | G3 B3 B3 E3 | F#3h rq G3 |
+        A3 A3 G3 G3 | G3 G3 G3 F#3 | G3 G3 A3 D4 | D4 C4, B3 A3 |
+        G3h G3 G3 | D4 C4 B3 B3 | G3h, G3e G3e G3 | F#3 A3, D4 C4 |
+        B3 G3 D4 C4 | D4 C4 B3 B3 | G3h. |"""),
+        ("Bass", """
+        E3 | E3 E3 D#3 B2 | E3 B2 C3 G2 | C3 B2 E3 C3 | B2h., E3 |
+        E3 E3 D#3 B2 | E3 B2 C3 G2 | C3 B2 E3 C3 | B2h rq E3 |
+        A3 F#3 G3 E3 | B2 C3 G2 B2 | E3 E3 D3 B2 | D3h, E3 F#3 |
+        G3h C3 G3 | G2 A2 B2 B2 | E3h, E3e E3e E3 | D3 C3, B2 A2 |
+        G2 E3 B2 C3 | G2 A2 B2 B2 | E3h. |"""),
+    ]))
 
 
 BAR_WARNINGS = []

@@ -50,7 +50,8 @@ Screens (`scripts/ui/screens/*`) only show state and pass taps along. All the lo
 
 - `Notation` (`scripts/music/notation.gd`) turns an exercise into staff notation in the learner's key: key signature (flats on a tie), spelling (chromatic notes follow di/fi/si raised, me/te lowered), clef from the learner's range, note values split and tied at bar lines, beams, accidentals per bar, and the continuous staff position of a sung pitch.
 - `MusicKey` is tonic plus mode. It converts between pitches and **scale degrees** (the neutral stored form) and renders syllables with the two toggles (La/Do-based minor, chromatic).
-- The readers produce a format-neutral `Song` (parts, notes in beats, lyrics with syllabic joins, breath marks).
+- The readers produce a format-neutral `Song` (parts, notes in beats, lyrics with syllabic joins, breath marks). `MusicXmlReader` makes every line its own part: each (part, staff, voice), and a voice written in chords splits into top and bottom lines, so a two-staff SATB hymn gives Soprano, Alto, Tenor, Bass. Wordless lower voices borrow the melody's lyrics. `Song.melody()` is the first part with notes.
+- **Choosing a voice:** `SongAnalyzer.analyze(song, part)` analyses one part (`Result.part`); the key always comes from the melody. `App.song_analysis(id)` uses the part saved in `LearnerProfile.song_parts[id]` (by name), else the melody; `App.best_fit_part` marks the part whose printed range is closest to the learner's. The course screen's "Your part" box sets it. The ensemble stages use the other parts, shifted by the same transposition.
 - `KeyFinder` uses the key signature plus a Krumhansl-Schmuckler match, with a bonus for the final note.
 - `SongAnalyzer` runs the pipeline: degrees and chromatic flags, range, transposition into the learner's voice, phrases (rests, breath marks, long notes), and skill tags with the song's own examples ("the jump in bar 12").
 - `SongLibrary` stores imported songs in `user://songs/`.

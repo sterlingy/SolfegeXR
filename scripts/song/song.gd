@@ -76,5 +76,22 @@ func melody() -> Song.Part:
 	return parts[0] if not parts.is_empty() else Song.Part.new()
 
 
+## Parts with notes to sing, in score order (the voices a learner can pick).
+func singable_parts() -> Array[Song.Part]:
+	var out: Array[Song.Part] = []
+	for p in parts:
+		if not p.sounding_notes().is_empty():
+			out.append(p)
+	return out
+
+
+## The singable part with this name, or null.
+func part_named(part_name: String) -> Song.Part:
+	for p in singable_parts():
+		if p.name == part_name:
+			return p
+	return null
+
+
 func seconds_per_beat() -> float:
 	return 60.0 / tempo_bpm
