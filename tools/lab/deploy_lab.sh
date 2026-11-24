@@ -35,4 +35,9 @@ cp sterlings-app.json "$STAGE/"
 cp -r build/public/. "$STAGE/dist/"
 cp tools/lab/deploy.ts "$STAGE/../lab_deploy.ts"
 cd "$STAGE"
+# deploy.ts passes Windows paths (C:\...) to tar and scp. Git Bash's GNU tar and
+# scp read "C:" as a remote host, so use Windows' own tar (bsdtar) and OpenSSH.
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*) PATH="/c/Windows/System32:/c/Windows/System32/OpenSSH:$PATH" ;;
+esac
 "$BUN" "$STAGE/../lab_deploy.ts"
