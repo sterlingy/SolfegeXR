@@ -10,7 +10,11 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
 GODOT="${GODOT:-/c/Godot/Godot_v4.7.2-stable_win64_console.exe}"
 : "${STERLINGS_SSH_KEY:?Set STERLINGS_SSH_KEY to the Lab deploy key file}"
-command -v bun >/dev/null || { echo "Bun is required: https://bun.sh"; exit 1; }
+BUN="$(command -v bun || true)"
+if [ -z "$BUN" ]; then   # winget install, before the shell has picked up the new PATH
+  BUN="$(ls "${LOCALAPPDATA:-$HOME/AppData/Local}"/Microsoft/WinGet/Packages/Oven-sh.Bun_*/bun-windows-x64/bun.exe 2>/dev/null | head -1 || true)"
+fi
+[ -n "$BUN" ] || { echo "Bun is required: https://bun.sh"; exit 1; }
 mkdir -p build
 touch build/.gdignore
 
@@ -31,4 +35,4 @@ cp sterlings-app.json "$STAGE/"
 cp -r build/public/. "$STAGE/dist/"
 cp tools/lab/deploy.ts "$STAGE/../lab_deploy.ts"
 cd "$STAGE"
-bun "$STAGE/../lab_deploy.ts"
+"$BUN" "$STAGE/../lab_deploy.ts"
