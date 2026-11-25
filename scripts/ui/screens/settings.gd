@@ -31,19 +31,9 @@ func setup(_args: Dictionary) -> void:
 	var snd := UI.card(col)
 	UI.label(snd, "Playback sound", 44)
 	UI.muted(snd, "The voice that plays notes for you, the drone and the chords.", 30)
-	var timbre := OptionButton.new()
-	timbre.custom_minimum_size = Vector2(0, UI.BUTTON_H)
-	timbre.add_theme_font_size_override("font_size", 40)
-	timbre.get_popup().add_theme_font_size_override("font_size", 40)
-	for i in SynthEngine.TIMBRE_NAMES.size():
-		timbre.add_item(SynthEngine.TIMBRE_NAMES[i], i)
-	timbre.select(p.timbre)
-	timbre.item_selected.connect(func(i):
-		_apply(func(): p.timbre = timbre.get_item_id(i))
-		App.synth.engine.timbre = p.timbre as SynthEngine.Timbre
-		_preview())
+	var timbre := SoundPicker.new(false, true)
 	snd.add_child(timbre)
-	UI.button(snd, "Hear it", _preview)
+	UI.button(snd, "Hear it", func(): App.preview_sound())
 
 	var mic := UI.card(col)
 	UI.label(mic, "Microphone", 44)
@@ -79,16 +69,6 @@ func setup(_args: Dictionary) -> void:
 func _apply(change: Callable) -> void:
 	change.call()
 	App.profile.save()
-
-
-## do, mi, sol, do in the middle of the learner's range, in the chosen sound.
-func _preview() -> void:
-	var e := App.synth.engine
-	e.release_all()
-	var tonic := (App.profile.voice_low + App.profile.voice_high) / 2 - 4
-	var at := e.time() + 0.05
-	for i in 4:
-		e.note(tonic + [0, 4, 7, 12][i], at + i * 0.45, 0.42 if i < 3 else 0.9)
 
 
 func _on_reset() -> void:

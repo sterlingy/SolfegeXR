@@ -102,6 +102,25 @@ func ensure_listening() -> void:
 		s.start()
 
 
+## Choose the playback sound (SynthEngine.Timbre): saved, and used from the next note.
+func set_timbre(t: int) -> void:
+	profile.timbre = clampi(t, 0, SynthEngine.Timbre.size() - 1)
+	profile.save()
+	synth.engine.timbre = profile.timbre as SynthEngine.Timbre
+
+
+## do, mi, sol, do in the current sound, from `tonic_midi` (default: the middle
+## of the learner's range). Stops anything else playing first.
+func preview_sound(tonic_midi := -1) -> void:
+	var e := synth.engine
+	e.release_all()
+	if tonic_midi < 0:
+		tonic_midi = (profile.voice_low + profile.voice_high) / 2 - 4
+	var at := e.time() + 0.05
+	for i in 4:
+		e.note(tonic_midi + [0, 4, 7, 12][i], at + i * 0.45, 0.42 if i < 3 else 0.9)
+
+
 ## Open the user manual (served next to the app at manual/).
 func open_manual() -> void:
 	open_site_page("manual")
@@ -143,6 +162,18 @@ func go(screen: String, args := {}, remember := true) -> void:
 	root.add_child(_screen)
 	if _screen.has_method("setup"):
 		_screen.setup(args)
+	_show_manual_link(screen in MANUAL_LINK_SCREENS)
+
+
+## Screens that show the web page's "Manual" link (web/page_head.html) in the
+## top-right corner. Elsewhere that corner belongs to the screen (the practice
+## screen's sound picker, song titles); Settings has its own User manual button.
+const MANUAL_LINK_SCREENS := ["home", "onboarding"]
+
+
+func _show_manual_link(on: bool) -> void:
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("var m=document.getElementById('manual-link');if(m)m.style.display='%s';" % ("" if on else "none"))
 
 
 func back() -> void:

@@ -25,7 +25,7 @@ Last updated 24 November 2026. The full history is in `git log`.
 | 11 curated songs | Done, but melodies 2–10 are drafts to check ([SONGS.md](SONGS.md)); Carol is an original layering, not Leontovych's score |
 | Song import (MusicXML, MIDI), song courses | Done |
 | Choosing your part (voice) in a song: every voice of a score, including two-staff SATB, with the closest one marked | Done; God Rest Ye has S, A, T, B from the scan. Checked in desktop screenshots, not on a phone |
-| Playback sounds: Warm, Flute, Choir (ooh), Soft organ, picked in Settings | Done; web and desktop render the same samples (`node tests/synth_parity.mjs`). Not yet heard on a phone |
+| Playback sounds: Warm, Flute, Choir (ooh), Soft organ, picked in Settings or at the top right of any exercise | Done; web and desktop render the same samples (`node tests/synth_parity.mjs`). Not yet heard on a phone |
 | Lyrics display | Done; no built-in songs have lyrics yet |
 | Backing track (chords follow the melody) | Done; needs headphones |
 | Ensemble stages (guide, fading guide, other parts) | Basic version done; needs headphones |

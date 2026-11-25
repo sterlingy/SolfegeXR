@@ -51,8 +51,12 @@ func _build() -> void:
 	t.add_theme_font_size_override("font_size", 34)
 	t.add_theme_color_override("font_color", UI.MUTED)
 	t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER  # top-right is kept clear for the page's Manual link
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	t.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	t.clip_text = true
 	top.add_child(t)
+	# Top right: the playback sound (the web Manual link is hidden on this screen).
+	top.add_child(_sound_picker())
 
 	_heading = UI.title(_col, "", 56)
 	_prompt = UI.muted(_col, "")
@@ -132,6 +136,16 @@ func _build() -> void:
 	_start_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_next_button = UI.button(actions, "Next ›", _on_next)
 	_next_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+
+## The playback sound (same choice as in Settings). Picking one plays a short
+## sample when nothing is running; mid-exercise it applies from the next notes
+## played (notes already scheduled keep their sound).
+func _sound_picker() -> Control:
+	var p := SoundPicker.new()
+	p.can_preview = func() -> bool:
+		return not _session or _session.phase in [PracticeSession.Phase.IDLE, PracticeSession.Phase.RESULT]
+	return p
 
 
 func _toggle_button(parent: Control, on: bool) -> Button:
