@@ -16,7 +16,7 @@ touch "$ROOT/build/.gdignore"   # keep the Godot editor from importing build out
 if [ "${1:-}" != "--no-export" ]; then
   echo "Exporting release web build..."
   "$GODOT" --headless --path . --export-release "Web" build/public/index.html >"$LOGS/export.log" 2>&1
-  bash tools/web/brand_build.sh build/public
+  bash tools/web/finish_build.sh build/public
 fi
 
 # Plain web pages served next to the app: /manual/, /privacy/.

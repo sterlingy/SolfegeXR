@@ -14,7 +14,8 @@ html = re.sub(r"<!--.*?-->\s*", "", html, flags=re.S).strip()
 value = html.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\n")
 cfg_path = os.path.join(ROOT, "export_presets.cfg")
 cfg = open(cfg_path, encoding="utf-8").read()
-cfg, n = re.subn(r'^html/head_include=".*"$', lambda m: 'html/head_include="%s"' % value, cfg, flags=re.M)
+# The stored value spans lines and escapes its quotes (\"), so match up to the closing quote.
+cfg, n = re.subn(r'^html/head_include="(?:[^"\\]|\\.)*"', lambda m: 'html/head_include="%s"' % value, cfg, flags=re.M)
 assert n == 1, "html/head_include not found"
 open(cfg_path, "w", encoding="utf-8", newline="\n").write(cfg)
 print("head_include updated (%d chars)" % len(value))
