@@ -39,6 +39,9 @@ func setup(_args: Dictionary) -> void:
 	UI.label(mic, "Microphone", 44)
 	UI.muted(mic, "If the app can't hear you, try another input here.", 30)
 	mic.add_child(MicPicker.new())
+	UI.toggle(mic, "Smooth my voice line", p.smooth_trace,
+		func(on): _apply(func(): p.smooth_trace = on))
+	UI.muted(mic, "Steadies the tiny shakes in the line you draw. Your score is the same either way.", 30)
 
 	var gear := UI.card(col)
 	UI.toggle(gear, "I have headphones", p.has_headphones, func(on): _apply(func(): p.has_headphones = on))

@@ -19,6 +19,7 @@ var play_along := false          ## hear the melody with the music (with headpho
 var sheet_view := false          ## practice shows sheet music instead of solfège lanes
 var sheet_syllables := true      ## solfège under the notes in the sheet music view
 var metronome := false         ## click the beat during the count-in and singing
+var smooth_trace := true        ## steady the drawn voice line (display only; scoring unchanged)
 var timbre := 0                ## playback sound: SynthEngine.Timbre (Warm, Flute, Choir, Soft organ)
 var mic_device_id := ""        ## chosen input ("" = browser default)
 var song_parts := {}           ## song id -> name of the part (voice) this learner sings
@@ -87,7 +88,7 @@ func to_dict() -> Dictionary:
 	return {version = VERSION, voice_low = voice_low, voice_high = voice_high,
 		range_tested = range_tested, minor_syllables = int(minor_syllables),
 		chromatic_enabled = chromatic_enabled, has_headphones = has_headphones,
-		tempo_scale = tempo_scale, metronome = metronome, timbre = timbre, sheet_view = sheet_view, play_along = play_along, hear_first = hear_first, sheet_syllables = sheet_syllables, onboarded = onboarded, mic_device_id = mic_device_id, song_parts = song_parts, skills = sk}
+		tempo_scale = tempo_scale, metronome = metronome, timbre = timbre, smooth_trace = smooth_trace, sheet_view = sheet_view, play_along = play_along, hear_first = hear_first, sheet_syllables = sheet_syllables, onboarded = onboarded, mic_device_id = mic_device_id, song_parts = song_parts, skills = sk}
 
 
 static func from_dict(d: Dictionary) -> LearnerProfile:
@@ -101,6 +102,7 @@ static func from_dict(d: Dictionary) -> LearnerProfile:
 	p.tempo_scale = float(d.get("tempo_scale", 1.0))
 	p.metronome = bool(d.get("metronome", false))
 	p.timbre = clampi(int(d.get("timbre", 0)), 0, SynthEngine.Timbre.size() - 1)
+	p.smooth_trace = bool(d.get("smooth_trace", true))
 	p.sheet_view = bool(d.get("sheet_view", false))
 	p.play_along = bool(d.get("play_along", false))
 	p.hear_first = bool(d.get("hear_first", true))

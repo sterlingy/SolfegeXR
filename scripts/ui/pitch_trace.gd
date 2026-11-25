@@ -14,7 +14,16 @@ signal feedback_changed(text: String)
 @export var tolerance_cents := 50.0        ## shaded band around each lane
 @export var min_confidence := 0.6
 @export var min_rms := 0.0015
-@export var smoothing_seconds := 0.03      ## light smoothing; vibrato stays visible
+@export var smoothing_seconds := 0.03      ## light smoothing when `steady` is off
+## Steady line: removes the tiny shakes in a held note but still follows note
+## changes and vibrato (a 5-frame median, then a "one euro" filter: heavy
+## smoothing while the pitch holds, light while it moves). Display only.
+## Follows the learner's "Smooth my voice line" setting.
+var steady := true
+@export var steady_min_cutoff := 1.2       ## Hz, while holding a note
+@export var steady_beta := 0.6             ## extra Hz per semitone/second of movement
+const STEADY_D_CUTOFF := 3.0               ## Hz, for the speed estimate
+const MEDIAN_FRAMES := 5
 
 @export_group("Colors")
 @export var background := Color("1b1d2a")
@@ -37,6 +46,9 @@ var center_midi := 57.0
 # flags: 1 = on target, 2 = folded into view by octaves.
 var _points: Array[Vector3] = []
 var _smoothed := NAN
+var _recent: Array[float] = []   ## last raw pitches, for the median
+var _speed := 0.0               ## filtered semitones/second
+var _prev_x := NAN              ## last median pitch
 var _last_time := 0.0
 var _now := 0.0
 var _font: Font
@@ -57,6 +69,9 @@ var _park_lead := -1.0 ## >= 0: targets stay this many seconds ahead of "now" (n
 
 
 func _ready() -> void:
+	var app := get_node_or_null("/root/App")
+	if app and app.profile:
+		steady = app.profile.smooth_trace
 	_font = get_theme_default_font()
 	clip_contents = true
 
@@ -175,12 +190,20 @@ func push_frame(f: PitchFrame) -> void:
 		return
 
 	var midi := MusicKey.hz_to_midi(f.frequency)
-	# Exponential smoothing in the pitch (semitone) domain.
 	if is_nan(_smoothed) or f.time - _last_time > 0.1:
 		_smoothed = midi
+		_recent.clear()
+		_speed = 0.0
+		_prev_x = NAN
+	elif steady:
+		_smoothed = _steady(midi, f.time - _last_time)
 	else:
+		# Light exponential smoothing in the pitch (semitone) domain.
 		var a := 1.0 - exp(-(f.time - _last_time) / maxf(smoothing_seconds, 0.001))
 		_smoothed = lerpf(_smoothed, midi, a)
+	_recent.append(midi)
+	if _recent.size() > MEDIAN_FRAMES:
+		_recent.pop_front()
 	_last_time = f.time
 
 	# Octave errors are forgiven: fold the pitch into the visible range.
@@ -199,6 +222,27 @@ func push_frame(f: PitchFrame) -> void:
 		flags |= 1
 	_points.append(Vector3(f.time, shown, flags))
 	_update_feedback(shown, near, cents, flags & 2 != 0)
+
+
+## One step of the steady line: median of the last few frames (drops one-frame
+## blips), then a low-pass whose cutoff rises with how fast the pitch moves.
+func _steady(midi: float, dt: float) -> float:
+	if dt <= 0.0:
+		return _smoothed
+	var window := _recent.duplicate()
+	window.append(midi)
+	window.sort()
+	var x: float = window[window.size() / 2]
+	var raw_speed := 0.0 if is_nan(_prev_x) else (x - _prev_x) / dt
+	_prev_x = x
+	_speed = lerpf(_speed, raw_speed, _alpha(STEADY_D_CUTOFF, dt))
+	var cutoff := steady_min_cutoff + steady_beta * absf(_speed)
+	return lerpf(_smoothed, x, _alpha(cutoff, dt))
+
+
+static func _alpha(cutoff_hz: float, dt: float) -> float:
+	var tau := 1.0 / (TAU * cutoff_hz)
+	return 1.0 / (1.0 + tau / dt)
 
 
 ## Nearest in-key note (as MIDI) to a pitch.

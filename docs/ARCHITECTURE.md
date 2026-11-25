@@ -76,7 +76,7 @@ Screens (`scripts/ui/screens/*`) only show state and pass taps along. All the lo
 ## App shell: `scripts/app.gd`, `scripts/ui/`
 
 - `App` (autoload) owns the profile, the pitch source, the synth, the song catalog and navigation (`App.go(name, args)`, `App.back()`).
-- Screens are built in code with the `UI` helpers for a consistent phone-first look. `PitchTrace` is the custom-drawn lanes, target bars (including glides and lyrics) and the sung line. With `view_sheet` on it draws the exercise as a scrolling staff instead (`SheetPainter`, using the Noto Music font for clefs, rests and accidentals), keeping the same clock so the sung line lands on the noteheads.
+- Screens are built in code with the `UI` helpers for a consistent phone-first look. `PitchTrace` is the custom-drawn lanes, target bars (including glides and lyrics) and the sung line. With `view_sheet` on it draws the exercise as a scrolling staff instead (`SheetPainter`, using the Noto Music font for clefs, rests and accidentals), keeping the same clock so the sung line lands on the noteheads. The sung line is smoothed for display only: with `steady` on (the learner's "Smooth my voice line" setting, `LearnerProfile.smooth_trace`, default on) a 5-frame median plus a "one euro" filter (heavy smoothing while the pitch holds, light while it moves) removes small shakes but keeps note changes and vibrato; off, a light 30 ms smoothing. The scorers take the pitch frames themselves (with their own smoothing), so the setting never changes a score.
 - `scenes/main.tscn` is the original sandbox, now **Free sing**.
 
 ## XR: `scripts/xr/`, `addons/`
