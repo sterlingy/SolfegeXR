@@ -64,7 +64,7 @@ Screens (`scripts/ui/screens/*`) only show state and pass taps along. All the lo
 
 ## Practice flow: `scripts/practice/`
 
-`PracticeSession` runs the phases CADENCE → LISTEN → COUNT_IN → SING → RESULT. Its timing follows the synth clock, and pitch frames are mapped from the mic clock at the downbeat. Without headphones nothing plays while the learner sings, so the mic doesn't hear the speaker. `RangeTest` and `LatencyCheck` are small siblings.
+`PracticeSession` runs the phases CADENCE → LISTEN → COUNT_IN → SING → RESULT. Its timing follows the synth clock, and pitch frames are mapped from the mic clock at the downbeat. Without headphones nothing plays while the learner sings, so the mic doesn't hear the speaker. Sound reaches the speaker `SynthEngine.output_lead()` seconds after its engine time (the browser's `outputLatency + baseLatency` on the web; the generator buffer plus driver latency on desktop). `PracticeSession.audio_lead` shifts the sung part, and the practice screen shifts the bars it draws, by that much, so a note is heard as its bar meets the line. `RangeTest` and `LatencyCheck` are small siblings.
 
 ## Sound: `scripts/audio/`
 

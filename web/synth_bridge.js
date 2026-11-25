@@ -3,6 +3,7 @@
 //
 //   start(workletSource)  create the audio context + synth worklet (async; watch .state)
 //   time()                synth clock in seconds (AudioContext.currentTime)
+//   lead()                seconds from that clock to the speaker (output + base latency)
 //   note(json)            schedule a note (fields: see synth_worklet.js)
 //   stop(kind)            release all voices of a kind
 //   release()             release everything
@@ -52,6 +53,8 @@
   };
 
   Y.time = function () { return Y.ctx ? Y.ctx.currentTime : 0; };
+  // Seconds from currentTime to the speaker (what the browser reports).
+  Y.lead = function () { return Y.ctx ? (Y.ctx.outputLatency || 0) + (Y.ctx.baseLatency || 0) : 0; };
   Y.note = function (json) { if (Y.node) Y.node.port.postMessage({ type: "note", v: JSON.parse(json) }); };
   Y.stop = function (kind) { if (Y.node) Y.node.port.postMessage({ type: "stop", kind: kind }); };
   Y.release = function () { if (Y.node) Y.node.port.postMessage({ type: "release" }); };

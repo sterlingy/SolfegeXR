@@ -31,7 +31,11 @@ var targets: Array = []         ## what's scored and drawn (relative seconds, le
 var reference: Array = []       ## what the synth plays as the example
 var scorer: RefCounted          ## PhraseScorer (notes) or SlideScorer (sirens and slides)
 var results: Array[NoteResult] = []
-var sing_origin_source := 0.0   ## pitch-source time when SING started
+var sing_origin_source := 0.0   ## pitch-source time when SING started (as heard)
+## Seconds from engine time to the speaker (SynthEngine.output_lead), read at
+## start. The sung part and anything drawn on the pitch-source clock is shifted
+## later by this, so the bars meet the line when the note is heard.
+var audio_lead := 0.0
 
 var _engine: SynthEngine
 var _phase_end := 0.0           ## engine time
@@ -78,6 +82,7 @@ func length_seconds() -> float:
 
 func start(engine: SynthEngine) -> void:
 	_engine = engine
+	audio_lead = engine.output_lead()
 	if exercise.drone:
 		engine.set_drone(drone_tonic())
 	if play_cadence and exercise.cadence_first:
@@ -97,7 +102,7 @@ func update(frames: Array[PitchFrame], source_now: float) -> void:
 	if _engine.time() < _phase_end:
 		if phase == Phase.COUNT_IN:
 			# Track the source clock right up to the downbeat.
-			sing_origin_source = source_now + (_phase_end - _engine.time())
+			sing_origin_source = source_now + (_phase_end - _engine.time()) + audio_lead
 		return
 	match phase:
 		Phase.CADENCE:
@@ -236,7 +241,7 @@ func listens_first() -> bool:
 
 
 func _begin_sing(source_now: float) -> void:
-	sing_origin_source = source_now
+	sing_origin_source = source_now + audio_lead
 	_sing_start_engine = _engine.time()
 	if exercise.mode == Exercise.Mode.NOTES:
 		scorer = PhraseScorer.new(targets, exercise.key, profile.scoring_settings())
@@ -245,7 +250,7 @@ func _begin_sing(source_now: float) -> void:
 	scorer.latency = 0.0
 	if speakers_only():
 		_engine.set_drone(-1)
-		_enter(Phase.SING, length_seconds() + TAIL_SECONDS)
+		_enter(Phase.SING, length_seconds() + TAIL_SECONDS + audio_lead)
 		return
 	if exercise.reference == Exercise.Reference.ALONG or play_along:
 		_play_guide()
@@ -255,7 +260,7 @@ func _begin_sing(source_now: float) -> void:
 		for t in p.targets:
 			_engine.note(t.midi, _sing_start_engine + t.start / tempo_scale, t.duration / tempo_scale * 0.97,
 				SynthEngine.Kind.PAD, 0.14)
-	_enter(Phase.SING, length_seconds() + TAIL_SECONDS)
+	_enter(Phase.SING, length_seconds() + TAIL_SECONDS + audio_lead)
 
 
 ## Guide voice; for the "fading guide" ensemble stage it gets quieter and stops.

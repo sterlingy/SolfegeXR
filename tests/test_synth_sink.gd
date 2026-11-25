@@ -8,9 +8,13 @@ class FakeSink extends RefCounted:
 	var notes: Array = []
 	var stops: Array = []
 	var releases := 0
+	var lead := 0.0
 
 	func time() -> float:
 		return t
+
+	func output_lead() -> float:
+		return lead
 
 	func note(v: Dictionary) -> void:
 		notes.append(v)
@@ -95,3 +99,32 @@ func test_song_steps_use_the_chosen_sound() -> void:
 					continue
 				var want := Array(SynthEngine.partials(t, n.kind, n.hz, 48000.0))
 				assert_eq(n.partials, want, "%s: %s note uses %s" % [step.title, SynthEngine.Kind.keys()[n.kind], SynthEngine.TIMBRE_NAMES[t]])
+
+
+## The speaker delay shifts the sung part later on the pitch-source clock, so
+## the bars (drawn from sing_origin_source) meet the line when the note is heard.
+func test_sing_origin_includes_speaker_delay() -> void:
+	var origins := []
+	for lead in [0.0, 0.25]:
+		var profile := LearnerProfile.new()
+		var ex := Curriculum.exercises_for(Skills.Id.STEPS, 0)[0]
+		var e := SynthEngine.new(48000.0)
+		var sink := FakeSink.new()
+		sink.lead = lead
+		e.sink = sink
+		var fake := FakePitchSource.new()
+		fake.quiet()
+		fake.start()
+		var s := PracticeSession.new(ex, profile, 1.0)
+		s.play_cadence = false
+		s.start(e)
+		assert_near(s.audio_lead, lead, 1e-6, "lead read from the synth")
+		var waited := 0.0
+		while s.phase != PracticeSession.Phase.SING and waited < 30.0:
+			sink.t += 1.0 / 60.0
+			fake.advance(1.0 / 60.0)
+			s.update(fake.poll(), fake.now())
+			waited += 1.0 / 60.0
+		origins.append(s.sing_origin_source - fake.now())
+		fake.free()
+	assert_near(origins[1] - origins[0], 0.25, 0.02, "origin moves by the speaker delay")

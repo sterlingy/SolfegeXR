@@ -280,13 +280,14 @@ func _on_phase(phase: PracticeSession.Phase) -> void:
 			_status.text = "Listen: this is home."
 		P.LISTEN:
 			_status.text = "Listen…"
-			_trace.set_targets(_session.reference, App.pitch_source().now() + 0.1)
+			# Drawn when they'll be heard: 0.1 s from now plus the speaker delay.
+			_trace.set_targets(_session.reference, App.pitch_source().now() + 0.1 + _session.audio_lead)
 		P.COUNT_IN:
 			_countdown = 0
 			_show_countdown()
 			if _exercise().mode == Exercise.Mode.NOTES:
 				# The notes scroll in toward the line during the countdown.
-				_trace.set_targets(_session.targets, App.pitch_source().now() + _session.count_in_left())
+				_trace.set_targets(_session.targets, App.pitch_source().now() + _session.count_in_left() + _session.audio_lead)
 		P.SING:
 			_status.text = {Exercise.Mode.SIREN: "Slide up and down!", Exercise.Mode.SLIDE_TO: "Slide to the note, then hold it!",
 				Exercise.Mode.FOLLOW: "Follow the slide!"}.get(_exercise().mode, "Sing!")

@@ -46,6 +46,22 @@ func time() -> float:
 	return sink.time() if sink else _now / rate
 
 
+## Set by SynthPlayer on desktop: seconds from engine time to the speaker.
+var lead_fn: Callable
+
+
+## Seconds between a note's engine time and when it comes out of the speaker:
+## the browser's reported output latency on the web; the generator's buffer
+## plus the driver's latency on desktop; 0 in tests. Screens that draw notes
+## on their own clock shift them by this so picture and sound line up.
+func output_lead() -> float:
+	if sink and sink.has_method("output_lead"):
+		return sink.output_lead()
+	if lead_fn.is_valid():
+		return lead_fn.call()
+	return 0.0
+
+
 ## Envelope, vibrato, chorus and breath for a sound and kind of note.
 static func settings(t: Timbre, kind: Kind) -> Dictionary:
 	var s := {attack = 0.3, release = 0.4, vib_cents = 0.0, vib_hz = 5.0, chorus = 0.0, breath = 0.0,

@@ -36,6 +36,12 @@ func _ready() -> void:
 	engine = SynthEngine.new(gen.mix_rate)
 	play()
 	_playback = get_stream_playback()
+	# Samples are rendered ahead into the generator's buffer, then the driver
+	# adds its own latency before the speaker.
+	var buffer_frames := gen.buffer_length * gen.mix_rate
+	engine.lead_fn = func() -> float:
+		var queued := buffer_frames - _playback.get_frames_available() if _playback else 0.0
+		return maxf(0.0, queued) / gen.mix_rate + AudioServer.get_output_latency()
 	_fill()
 
 

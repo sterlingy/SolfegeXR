@@ -27,6 +27,12 @@ func time() -> float:
 	return float(_js.time())
 
 
+## The browser's estimate of time from its audio clock to the speaker
+## (output + base latency), in seconds. Bluetooth headphones add a lot here.
+func output_lead() -> float:
+	return clampf(float(_js.lead()), 0.0, 1.0)
+
+
 func note(v: Dictionary) -> void:
 	_js.note(JSON.stringify(v))
 
