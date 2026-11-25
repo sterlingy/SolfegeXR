@@ -9,11 +9,20 @@ $project = 'Y:\Projects - INTERNAL\SolfegeXR'
 $base = Join-Path $project 'thirdparty\android-bootstrap'
 $godot = 'C:\Godot\Godot_v4.7.2-stable_win64_console.exe'
 
-$env:JAVA_HOME = Join-Path $base 'jdk'
-$env:ANDROID_HOME = Join-Path $base 'sdk'
+# Use this machine's own JDK/SDK when JAVA_HOME / ANDROID_HOME are set (for
+# example C:\Android\jdk-17 and C:\Android\sdk); otherwise fall back to the
+# copy on the shared drive.
+if (-not ($env:JAVA_HOME -and (Test-Path (Join-Path $env:JAVA_HOME 'bin\java.exe')))) {
+    $env:JAVA_HOME = Join-Path $base 'jdk'
+}
+if (-not ($env:ANDROID_HOME -and (Test-Path (Join-Path $env:ANDROID_HOME 'platform-tools')))) {
+    $env:ANDROID_HOME = Join-Path $base 'sdk'
+}
 $env:ANDROID_SDK_ROOT = $env:ANDROID_HOME
+Write-Host "JDK: $env:JAVA_HOME"
+Write-Host "Android SDK: $env:ANDROID_HOME"
 
-# Point this Windows user's Godot editor settings at the shared JDK/SDK.
+# Point this Windows user's Godot editor settings at that JDK/SDK.
 $settings = Join-Path $env:APPDATA 'Godot\editor_settings-4.7.tres'
 if (Test-Path $settings) {
     $text = Get-Content $settings -Raw
@@ -22,7 +31,7 @@ if (Test-Path $settings) {
     $text = $text -replace '(?m)^export/android/java_sdk_path = ".*"$', "export/android/java_sdk_path = `"$jdk`""
     $text = $text -replace '(?m)^export/android/android_sdk_path = ".*"$', "export/android/android_sdk_path = `"$sdk`""
     Set-Content -Path $settings -Value $text -Encoding UTF8 -NoNewline
-    Write-Host 'Godot editor settings now point at the shared JDK and Android SDK.' -ForegroundColor Cyan
+    Write-Host 'Godot editor settings now point at that JDK and Android SDK.' -ForegroundColor Cyan
 } else {
     Write-Host 'No Godot editor settings for this user yet; using JAVA_HOME / ANDROID_HOME.' -ForegroundColor Yellow
 }
