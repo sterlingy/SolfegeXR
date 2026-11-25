@@ -776,8 +776,9 @@ func _move(pos: Vector2, vp: SubViewport = null) -> void:
 	ev.relative = pos - _last_pos
 	ev.button_mask = MOUSE_BUTTON_MASK_LEFT if _pressed else 0
 	vp.push_input(ev)
-	if _pressed:
-		# Dragging up/down scrolls (wheel steps), like a finger on a phone.
+	if _pressed and vp == doc_vp:
+		# Dragging up/down scrolls the doc window (wheel steps). The app panel's
+		# pages scroll themselves from the drag (DragScroll).
 		_scroll_accum += pos.y - _last_pos.y
 		while absf(_scroll_accum) >= 60.0:
 			var up := _scroll_accum > 0.0

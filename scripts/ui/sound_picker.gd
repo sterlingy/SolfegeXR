@@ -48,6 +48,7 @@ func _open() -> void:
 	_layer = Control.new()
 	_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_layer.mouse_filter = Control.MOUSE_FILTER_STOP
+	_layer.add_to_group(DragScroll.BLOCK_GROUP)   # the page doesn't scroll under the list
 	_layer.gui_input.connect(func(ev: InputEvent):
 		if ev is InputEventMouseButton and ev.pressed:
 			_close())

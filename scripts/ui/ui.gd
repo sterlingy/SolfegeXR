@@ -52,6 +52,7 @@ static func page(screen: Control, scroll := true) -> VBoxContainer:
 		var sc := ScrollContainer.new()
 		sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 		margin.add_child(sc)
+		sc.add_child(DragScroll.new())   # drag on buttons scrolls too
 		col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		sc.add_child(col)
 	else:
