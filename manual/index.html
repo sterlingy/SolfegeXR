@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Solfège Master XR User Manual</title>
+<meta name="description" content="How to use Solfège Master XR: learn to sing in key with do re mi and live pitch feedback.">
+<style>
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --text: #1d1f2b;
+    --muted: #5d6070;
+    --line: #e2e0d8;
+    --accent: #1f7aa8;
+    --good: #2b8a4b;
+    --warm: #a8670c;
+    --target: #f3d48a;
+    --code: #efede6;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14151f; --surface: #1f2130; --text: #f1f1f5; --muted: #a9abbb; --line: #2e3145;
+      --accent: #7fd3ff; --good: #8cf0a6; --warm: #ffd27a; --target: #6b5a2c; --code: #2a2d42;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14151f; --surface: #1f2130; --text: #f1f1f5; --muted: #a9abbb; --line: #2e3145;
+    --accent: #7fd3ff; --good: #8cf0a6; --warm: #ffd27a; --target: #6b5a2c; --code: #2a2d42;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 24px 16px 64px; }
+  header.top { padding: 8px 0 20px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+  header.top p { color: var(--muted); margin: 6px 0 0; }
+  h1 { font-size: 1.9rem; line-height: 1.2; margin: 0; }
+  h2 { font-size: 1.35rem; margin: 40px 0 8px; padding-top: 8px; scroll-margin-top: 12px; }
+  h3 { font-size: 1.08rem; margin: 24px 0 6px; }
+  p, li { max-width: 65ch; }
+  a { color: var(--accent); }
+  .open-app {
+    display: inline-block; margin-top: 16px; padding: 12px 20px; border-radius: 14px;
+    background: var(--accent); color: var(--bg); font-weight: 600; text-decoration: none;
+  }
+  nav.toc { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px 18px; margin: 20px 0; }
+  nav.toc strong { display: block; margin-bottom: 6px; }
+  nav.toc ol { margin: 0; padding-left: 22px; columns: 2 220px; column-gap: 24px; }
+  nav.toc li { margin: 2px 0; break-inside: avoid; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px 18px; margin: 16px 0; }
+  .card > :first-child { margin-top: 0; }
+  .card > :last-child { margin-bottom: 0; }
+  .hint { font-size: 0.9rem; }
+  .quick { border: 2px solid var(--accent); margin-top: 20px; }
+  .quick h2 { margin: 0 0 8px; padding: 0; font-size: 1.25rem; }
+  .steps { counter-reset: step; list-style: none; padding: 0; margin: 0; }
+  .steps li { counter-increment: step; position: relative; padding: 0 0 12px 44px; }
+  .steps li::before {
+    content: counter(step); position: absolute; left: 0; top: 0;
+    width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: var(--bg);
+    font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+  .check { margin: 4px 0 0; padding-top: 10px; border-top: 1px solid var(--line); }
+  .tip { border-left: 4px solid var(--good); }
+  .note { border-left: 4px solid var(--warm); }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 0.95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; }
+  .table-scroll { overflow-x: auto; }
+  code { background: var(--code); padding: 1px 6px; border-radius: 6px; font-size: 0.92em; }
+  .syl { font-style: italic; }
+  figure { margin: 16px 0; }
+  figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 6px; }
+  svg text { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.9rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>Solfège Master XR User Manual</h1>
+  <p>Learn to sing in key with do re mi and live feedback from your microphone.</p>
+  <p class="hint">Opened from the app? The app is still open in your other tab.</p>
+  <a class="open-app" href="../">‹ Back to the app</a>
+</header>
+
+<section id="quick-start" class="card quick">
+  <h2>Quick start: your first note in 2 minutes</h2>
+  <ol class="steps">
+    <li><strong>Open the app</strong> and tap <strong>Let's go</strong>. For the setup questions, the suggested answers are fine: tap <strong>Use la-based</strong>, then <strong>Continue</strong>, then answer the headphones question.</li>
+    <li><strong>Find your range.</strong> Tap <strong>Start</strong> and <strong>Allow</strong> the microphone. Slide your voice down on "ooo" for a few seconds, then up. Tap <strong>Sounds good</strong>. In a hurry? Tap <strong>Skip: choose a voice type</strong> instead.</li>
+    <li><strong>Start your first lesson.</strong> On the home screen, tap <strong>Start</strong> under <em>Next lesson</em>, then <strong>Start</strong> again.</li>
+    <li><strong>Listen, then sing.</strong> You'll hear a few chords, then four notes: <span class="syl">do, mi, sol, do</span>. When the screen says <strong>Sing!</strong>, sing them back (any sound works, like "la"). Follow the yellow bars as they reach the line.</li>
+    <li><strong>See how you did.</strong> Your voice stays drawn over the yellow bars: <strong>green</strong> means you landed the note. Read the message below it, then tap <strong>Again</strong> to try once more, or <strong>Next ›</strong> to move on. If it went by too fast, tap <strong>Slow</strong>.</li>
+  </ol>
+  <p class="check"><strong>Is it working?</strong> While you hum, a line should move on screen. No line at all? See <a href="#trouble">Troubleshooting</a>. It's almost always the microphone permission, or the wrong microphone selected.</p>
+</section>
+
+<nav class="toc" aria-label="Contents">
+  <strong>Contents</strong>
+  <p style="margin:0 0 6px">New here? Start with the <a href="#quick-start">Quick start</a>.</p>
+  <ol>
+    <li><a href="#before">Before you start</a></li>
+    <li><a href="#first-run">First run</a></li>
+    <li><a href="#range">Your singing range</a></li>
+    <li><a href="#home">The home screen</a></li>
+    <li><a href="#practice">Practicing</a></li>
+    <li><a href="#trace">Reading the pitch trace</a></li>
+    <li><a href="#feedback">What the feedback means</a></li>
+    <li><a href="#lessons">Lessons and mastery</a></li>
+    <li><a href="#songs">Learning a song</a></li>
+    <li><a href="#free-sing">Free sing</a></li>
+    <li><a href="#progress">Progress</a></li>
+    <li><a href="#settings">Settings</a></li>
+    <li><a href="#solfege">A little about solfège</a></li>
+    <li><a href="#trouble">Troubleshooting</a></li>
+    <li><a href="#privacy">Privacy</a></li>
+    <li><a href="#testers">For testers</a></li>
+  </ol>
+</nav>
+
+<p>Most people who believe they can't sing were simply never taught. This app starts with matching a single note, then teaches the syllables <span class="syl">do re mi</span>, and then real songs in a key that suits your voice. You're new at this, not bad at it.</p>
+
+<h2 id="before">1. Before you start</h2>
+<ul>
+  <li><strong>A browser:</strong> Chrome on Android or a computer works best. iPhone and iPad work too, through Safari or any iOS browser.</li>
+  <li><strong>A microphone:</strong> your phone's built-in mic is fine. On a computer, a webcam or headset mic works.</li>
+  <li><strong>A quiet spot:</strong> background talking or music can confuse the pitch display.</li>
+  <li><strong>Headphones (optional):</strong> you can do all the early lessons without them. Later lessons that sing along with music and other voices need headphones, so the microphone hears only you.</li>
+</ul>
+<div class="card tip">
+  <p><strong>Tip:</strong> when the browser asks to use your microphone, tap <strong>Allow</strong>. The app can't hear you without it.</p>
+</div>
+
+<h3>Install it like an app (optional)</h3>
+<p>You can add the app to your home screen. It then opens full-screen, like any other app, and loads faster next time.</p>
+<ul>
+  <li><strong>Android (Chrome):</strong> tap the <strong>⋮</strong> menu, then <strong>Add to Home screen</strong> or <strong>Install app</strong>.</li>
+  <li><strong>iPhone / iPad (Safari):</strong> tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>.</li>
+  <li><strong>Computer (Chrome or Edge):</strong> click the install icon at the right of the address bar.</li>
+</ul>
+<p>When a new version is available, a bar at the bottom says <strong>"A new version is ready. Tap to update."</strong></p>
+
+<h2 id="first-run">2. First run</h2>
+<p>The first time you open the app, it asks four quick questions. You can change every answer later in <a href="#settings">Settings</a>.</p>
+<ol>
+  <li><strong>Welcome:</strong> tap <strong>Let's go</strong>.</li>
+  <li><strong>Syllables in minor keys:</strong> choose <strong>La-based</strong> (recommended) or <strong>Do-based</strong>. See <a href="#solfege">A little about solfège</a> if you're curious. If you're unsure, pick La-based.</li>
+  <li><strong>Notes outside the scale:</strong> leave this off for now. Some songs use notes from outside their key. You'll still sing them; the app just labels them "outside the scale" until you choose to learn their names.</li>
+  <li><strong>Headphones?:</strong> tell the app whether you have headphones on. This changes what plays while you sing (see <a href="#practice">Practicing</a>).</li>
+</ol>
+
+<h2 id="range">3. Your singing range</h2>
+<p>Next, the app finds the notes that are comfortable for you, so every exercise and song fits your voice.</p>
+<ol>
+  <li>Tap <strong>Start</strong>.</li>
+  <li>For about 6 seconds, <strong>slide your voice down</strong> like a relaxed sigh on "ooo", to the lowest note that still feels easy.</li>
+  <li>For the next 6 seconds, <strong>slide up</strong> to the highest note that feels light and easy.</li>
+  <li>The app shows your range, for example "C3 to G4". Tap <strong>Sounds good</strong>, or <strong>Try again</strong>.</li>
+</ol>
+<div class="card note">
+  <p><strong>Don't push.</strong> Comfortable is the goal, not impressive. The app ignores strained or wobbly notes and trims a little from each end.</p>
+</div>
+<p>Rather skip the test? Tap <strong>Skip: choose a voice type</strong>:</p>
+<div class="table-scroll"><table>
+  <tr><th>Voice type</th><th>Range</th><th>Typical for</th></tr>
+  <tr><td>Low voice</td><td>G2 to D4</td><td>most adult men</td></tr>
+  <tr><td>Middle voice</td><td>C3 to G4</td><td>higher men's voices, lower women's voices</td></tr>
+  <tr><td>High voice</td><td>G3 to D5</td><td>most adult women and children</td></tr>
+</table></div>
+<p>You can run the test again any time in <strong>Settings → Test my range again</strong>.</p>
+
+<h2 id="home">4. The home screen</h2>
+<ul>
+  <li><strong>Progress · Free sing · Settings:</strong> the buttons along the top.</li>
+  <li><strong>Manual:</strong> the button in the top-right corner opens this page. It shows on the home screen; elsewhere, use <strong>Settings → User manual</strong>.</li>
+  <li><strong>Next lesson:</strong> the skill you're working on, with a <strong>Start</strong> button. Once you've practiced it, a bar shows how many of your recent notes you landed.</li>
+  <li><strong>Songs:</strong> the songs you can learn. Tap one to see its course (see <a href="#songs">Learning a song</a>).</li>
+</ul>
+
+<h2 id="practice">5. Practicing</h2>
+<p>Every exercise follows the same rhythm:</p>
+<div class="table-scroll"><table>
+  <tr><th>Step</th><th>On screen</th><th>What to do</th></tr>
+  <tr><td>1. Find home</td><td>"Listen: this is home."</td><td>A few chords play. They set the key so your ear knows where "home" (<span class="syl">do</span>) is.</td></tr>
+  <tr><td>2. Listen</td><td>"Listen…"</td><td>The app sings the notes first, and the yellow target bars show where they are.</td></tr>
+  <tr><td>3. Get ready</td><td>"Your turn…"</td><td>Take a breath.</td></tr>
+  <tr><td>4. Sing</td><td>"Sing!"</td><td>Sing the notes as the target bars reach the line. Your voice draws as a line over them.</td></tr>
+  <tr><td>5. Results</td><td>A short message</td><td>The whole attempt stays on screen, so you can see where you landed. Tap <strong>Again</strong>, or <strong>Next ›</strong>.</td></tr>
+</table></div>
+<p><strong>Sound</strong>, in the top-right corner of every exercise, changes the sound of the notes the app plays (Warm, Flute, Choir or Soft organ). Pick one between attempts to hear a short sample. It's the same choice as in Settings, and it applies everywhere: lessons, songs, the backing track and the other voices.</p>
+<p>The first exercise of each lesson is a warm-up called <strong>Find the key</strong>: after the chords, sing <span class="syl">do, mi, sol, do</span> back. It doesn't count toward your progress.</p>
+
+<h3>Sirens and slides</h3>
+<p>The first lesson, <em>Matching a note</em>, starts with sliding instead of single notes. Finding a note by sliding to it is easier than hitting it straight away.</p>
+<ul>
+  <li><strong>Siren:</strong> slide your voice up and down on "ooo", like a siren. There's no target and no wrong note; it warms up your voice and shows you your own range on screen.</li>
+  <li><strong>Slide to do / Slide to sol:</strong> listen to the note, then start anywhere and slide until your line turns green. Stay there for a moment.</li>
+  <li><strong>Follow the slide:</strong> the target slides from <span class="syl">do</span> up to <span class="syl">sol</span> and back, drawn as a sloped band. Slide along with it.</li>
+</ul>
+
+<h3>Speed</h3>
+<p>The <strong>Slow</strong>, <strong>Easy</strong> and <strong>Normal</strong> buttons set the speed: half speed, three-quarter speed and full speed. Slow practice is how everyone learns, so use it freely. The app remembers your choice.</p>
+
+<h3>Sheet music</h3>
+<p>Tap <strong>Solfège lanes</strong> to switch to <strong>Sheet music</strong> (tap again to switch back). The notes appear on a staff, written in <em>your</em> key: the app moves every song to where your voice sits, so the key signature can differ from the printed copy. The line above the staff says both, for example "Printed in E minor · sung in D minor". Higher voices read the treble clef and lower voices the bass clef, based on your range test.</p>
+<ul>
+  <li>Your voice draws over the staff as you sing. Singing a little flat shows just under the note, a little sharp just above.</li>
+  <li>The solfège syllables sit under the notes, and the words under those. You can hide the syllables in Settings (<strong>Solfège under the sheet music</strong>).</li>
+  <li>When you finish, each note takes a color: <strong>green</strong> landed, <strong>gold</strong> nearly, <strong>purple</strong> keep going, <strong>grey</strong> not heard. A short phrase zooms out to show all of it. For a longer one, drag the music to the right to look back.</li>
+  <li>Sheet music is only for melodies. Sirens and slides always use the lanes.</li>
+</ul>
+<p><strong>Hear it first</strong> (on at the start) plays the melody once, with the music scrolling, before you sing. Turn it off when you know the tune and want to go straight to the countdown. Turning it off while the melody plays skips the rest of it.</p>
+<p><strong>Play along</strong> lets you hear the melody with the music. With headphones (Settings → <strong>I have headphones</strong>) it plays while you sing. Without them it plays the music through once first, then goes quiet while you sing, because otherwise the microphone would hear the speaker instead of you.</p>
+
+<h3>With and without headphones</h3>
+<ul>
+  <li><strong>Without headphones:</strong> nothing plays while you sing, because otherwise the microphone would hear the speaker instead of you. The quiet background note stops just before your turn, and songs play their melody for you first.</li>
+  <li><strong>With headphones</strong> (turn on <strong>I have headphones</strong> in Settings): a quiet background note on <span class="syl">do</span> keeps playing, and song phrases can play along with you.</li>
+</ul>
+<p>To stop an exercise partway, tap <strong>Stop</strong>. <strong>‹ Back</strong> returns to the previous screen.</p>
+
+<h2 id="trace">6. Reading the pitch trace</h2>
+<figure>
+  <svg viewBox="0 0 640 260" width="100%" role="img" aria-labelledby="trace-title">
+    <title id="trace-title">Example pitch trace: lanes labeled do re mi, yellow target bars, and a sung line that turns green when on pitch</title>
+    <rect x="0" y="0" width="640" height="260" rx="14" fill="#1b1d2a"/>
+    <g stroke="#ffffff" stroke-opacity="0.18" stroke-width="1.5">
+      <line x1="0" y1="60" x2="640" y2="60"/><line x1="0" y1="110" x2="640" y2="110"/>
+      <line x1="0" y1="160" x2="640" y2="160"/>
+    </g>
+    <line x1="0" y1="210" x2="640" y2="210" stroke="#ffd27a" stroke-opacity="0.55" stroke-width="3"/>
+    <g fill="#ffffff" fill-opacity="0.8" font-size="18">
+      <text x="12" y="54">fa</text><text x="12" y="104">mi</text><text x="12" y="154">re</text><text x="12" y="204">do</text>
+    </g>
+    <g fill="#ffd27a" fill-opacity="0.3" stroke="#ffd27a" stroke-opacity="0.8" stroke-width="2">
+      <rect x="70" y="196" width="130" height="28" rx="4"/>
+      <rect x="210" y="146" width="130" height="28" rx="4"/>
+      <rect x="350" y="96" width="130" height="28" rx="4"/>
+    </g>
+    <path d="M70 232 Q 82 214 96 211 C 110 207 120 213 132 209 C 144 205 156 213 168 209 C 180 206 190 212 198 210"
+          fill="none" stroke="#8cf0a6" stroke-width="5" stroke-linecap="round"/>
+    <path d="M212 182 Q 222 172 236 172 C 250 172 262 176 276 172 C 290 168 304 175 318 172 C 328 170 334 173 340 172"
+          fill="none" stroke="#7fd3ff" stroke-width="5" stroke-linecap="round"/>
+    <path d="M352 132 Q 362 114 378 111 C 392 107 404 113 418 109 C 432 105 446 112 460 109 C 470 107 476 111 480 110"
+          fill="none" stroke="#8cf0a6" stroke-width="5" stroke-linecap="round"/>
+    <g font-size="15" fill="#f1f1f5">
+      <text x="500" y="114">landed (green)</text>
+      <text x="356" y="196">a little low (blue)</text>
+    </g>
+  </svg>
+  <figcaption>The yellow bars are the notes to sing. Your voice is the line: green when you're on the note, blue when you're off it. The second note here is a little low.</figcaption>
+</figure>
+<ul>
+  <li><strong>Lanes:</strong> each horizontal lane is a note of the scale, labeled with its syllable (<span class="syl">do, re, mi…</span>). The gold lane is <span class="syl">do</span>, home.</li>
+  <li><strong>Target bars:</strong> the yellow bars show which note to sing, and for how long.</li>
+  <li><strong>Your line:</strong> it's <strong>green</strong> when you're within the target zone, and <strong>blue</strong> otherwise. The faint shaded band around each lane is that zone.</li>
+  <li><strong>A faded line</strong> means you're singing in a different octave, higher or lower than shown. That's fine: it still counts.</li>
+  <li><strong>Wiggles</strong> are normal. Natural vibrato and sliding into a note are allowed for.</li>
+</ul>
+
+<h2 id="feedback">7. What the feedback means</h2>
+<div class="table-scroll"><table>
+  <tr><th>You see</th><th>Meaning</th></tr>
+  <tr><td>You landed it! / You landed every note!</td><td>On pitch for most of the note.</td></tr>
+  <tr><td>You found it! Next time try to land it a little sooner.</td><td>You got there, after a long slide.</td></tr>
+  <tr><td>So close. A tiny bit higher / lower.</td><td>Just outside the target zone.</td></tr>
+  <tr><td>A little low. Slide up until it locks in.<br>A little high. Ease down…</td><td>Steadily below or above the note. Slide gently until the line turns green.</td></tr>
+  <tr><td>Great start! It sank / crept up a little as you held it.</td><td>You started on the note but drifted. Keep the air flowing and stay relaxed.</td></tr>
+  <tr><td>That was <span class="syl">re</span>. We're looking for <span class="syl">mi</span>.</td><td>You sang a clear note, just a different one. Listen again and try once more.</td></tr>
+  <tr><td>I didn't hear that one.</td><td>Too quiet, or no steady note. Sing a little louder, or check the <a href="#trouble">microphone</a>.</td></tr>
+  <tr><td>(You sang it an octave lower, which is fine.)</td><td>Same note, different octave. It still counts.</td></tr>
+</table></div>
+<p>How close counts as "landed" starts generous, within half a semitone, and gets gradually tighter as you master skills.</p>
+
+<h2 id="lessons">8. Lessons and mastery</h2>
+<p>The core lessons go in this order:</p>
+<ol>
+  <li>Matching a note (sirens and slides first)</li>
+  <li>Holding a note</li>
+  <li>Steps (<span class="syl">do re mi</span>)</li>
+  <li>Small leaps (<span class="syl">do</span> to <span class="syl">mi</span>)</li>
+  <li>Big leaps (<span class="syl">do</span> to <span class="syl">sol</span>, octaves)</li>
+  <li>Phrases and songs</li>
+  <li>Minor keys and modes</li>
+  <li>Notes outside the scale (only if you've turned that on)</li>
+  <li>Singing with a backing track</li>
+  <li>Singing with other voices</li>
+</ol>
+<p>A skill counts as <strong>mastered</strong> when you've landed about 8 of your last 10 notes (80% of the last 20) on at least two different days. The <strong>Next lesson</strong> card on the home screen then moves on to the next skill. From "Phrases and songs" onward, you learn through the songs.</p>
+
+<h2 id="songs">9. Learning a song</h2>
+<p>Tap a song on the home screen to open its course:</p>
+<ul>
+  <li>The song is moved into <strong>your key</strong>, so it fits your range.</li>
+  <li><strong>You already know</strong> lists skills you've mastered; those parts are skipped.</li>
+  <li><strong>This song will teach</strong> lists the skills it practices. The drills use the song's own notes, for example "This is the jump in bar 12 of your song."</li>
+  <li>Then you sing the song <strong>phrase by phrase</strong>, and finally <strong>the whole song</strong>.</li>
+</ul>
+<p><strong>Your part.</strong> When a song is written for several voices, its page shows a <strong>Your part</strong> box with one button per voice, for example Soprano, Alto, Tenor and Bass, each with its printed range. The voice closest to your range is marked <strong>fits you</strong>. Tap a voice to learn that line: the whole course (drills, phrases, sheet music) follows it, moved into your range. The melody is chosen until you pick another voice. The app remembers your choice for each song, and switching never resets your progress. In the singing-together steps, the other voices sing with you. God Rest You Merry, Gentlemen has all four voices of its hymnal setting.</p>
+<p>Songs in order: Ode to Joy · When the Saints Go Marching In · She'll Be Coming 'Round the Mountain · Oh! Susanna · Auld Lang Syne · Amazing Grace · Drunken Sailor · Take Me Out to the Ball Game · Shenandoah · Danny Boy · God Rest You Merry, Gentlemen · and the layered finale, Shchedryk (Carol of the Bells).</p>
+<p>After <strong>The whole song</strong>, each song has a <strong>With a backing track</strong> step: you sing over a simple accompaniment (bass and chords that follow the tune). It needs headphones, so turn on <strong>I have headphones</strong> in Settings to see it.</p>
+<p>The finale is sung in stages, with headphones: alone, over chords, with a guide voice, with a guide that fades away, with a second voice, and finally with all the parts at once.</p>
+<div class="card note">
+  <p><strong>During testing:</strong> some melodies are still draft transcriptions, marked "Draft transcription" on their page, and the songs have no lyrics yet. If a melody sounds wrong to you, please say so.</p>
+</div>
+
+<h3>Importing your own song</h3>
+<p>On the home screen, tap <strong>+ Import a song</strong>, then <strong>Choose a file</strong>. The app accepts:</p>
+<ul>
+  <li><strong>MusicXML</strong> (<code>.musicxml</code>, <code>.mxl</code>, <code>.xml</code>). In MuseScore: <em>File → Export → MusicXML</em>.</li>
+  <li><strong>MIDI</strong> (<code>.mid</code>). It works best when the tune is on its own track.</li>
+</ul>
+<p>If the file includes lyrics, they show up as you practice: the phrase's words above the trace, and each syllable under its note. The built-in songs don't have lyrics yet.</p>
+<p>The app finds the key, moves the song into your range, and builds a course from it, just like the built-in songs. Every voice in the file becomes a part you can pick, including choir scores where two voices share a staff (soprano and alto on one, tenor and bass on the other). The first voice is used as the melody until you pick another. Imported songs appear under <strong>Your songs</strong> and stay on this device. To delete one, open it and tap <strong>Remove this song from the app</strong> at the bottom.</p>
+
+<h2 id="free-sing">10. Free sing</h2>
+<p>Free sing is a sandbox: no exercise, just your voice drawn over the lanes. Choose a <strong>key</strong>, a <strong>mode</strong> (Major, Minor, Dorian…) and a <strong>voice range</strong>, tap <strong>Start</strong>, and sing anything. The message at the top tells you which syllable you're on, and whether you're a little high or low.</p>
+<p>The small grey line at the bottom shows technical details: frequency, confidence, input level and timing. It's useful when reporting a problem.</p>
+
+<h2 id="progress">11. Progress</h2>
+<p>For each skill you've practiced, <strong>Progress</strong> shows your <strong>first day</strong> next to your <strong>latest day</strong>: the share of notes you landed, plus how many notes you've sung over how many days. Mastered skills have a ✓. Week by week, the difference is usually bigger than it feels.</p>
+
+<h2 id="settings">12. Settings</h2>
+<div class="table-scroll"><table>
+  <tr><th>Setting</th><th>What it does</th></tr>
+  <tr><td>Minor-key syllables</td><td>La-based or Do-based names in minor songs. Your progress is kept either way.</td></tr>
+  <tr><td>Chromatic syllables</td><td>Learn names for notes outside the scale (<span class="syl">fi, te…</span>). Adds the "Notes outside the scale" lesson.</td></tr>
+  <tr><td>Playback sound</td><td>The sound of the notes the app plays for you, the background note and the chords: <strong>Warm</strong> (the default), <strong>Flute</strong>, <strong>Choir (ooh)</strong> or <strong>Soft organ</strong>. Picking one plays a short sample; <strong>Hear it</strong> plays it again. You can also change it from <strong>Sound</strong> at the top right of any exercise.</td></tr>
+  <tr><td>Microphone</td><td>Choose which input to use. Change it if the app can't hear you.</td></tr>
+  <tr><td>Smooth my voice line</td><td>On by default. Steadies the tiny shakes in the line your voice draws, while still showing note changes and vibrato. Turn it off to see every wobble. Your score is the same either way.</td></tr>
+  <tr><td>I have headphones</td><td>Unlocks the backing-track and ensemble stages, and lets music play while you sing.</td></tr>
+  <tr><td>Your range / Test my range again</td><td>Shows your range and lets you re-measure it.</td></tr>
+  <tr><td>Check timing</td><td>Plays six short beeps and listens for them, to measure how quickly your voice shows up on screen on this device. Take headphones off and turn the volume up first.</td></tr>
+  <tr><td>User manual</td><td>Opens this page.</td></tr>
+  <tr><td>Reset all progress</td><td>Erases everything on this device. Tap twice to confirm.</td></tr>
+</table></div>
+
+<h2 id="solfege">13. A little about solfège</h2>
+<p>Solfège gives each note of a scale a syllable: <span class="syl">do re mi fa sol la ti do</span>. This app uses <strong>movable do</strong>: <span class="syl">do</span> is always the home note of whatever key you're in. So once you can sing <span class="syl">do</span> to <span class="syl">sol</span>, you can sing that jump in any song, in any key.</p>
+<h3>Minor keys: La-based or Do-based?</h3>
+<ul>
+  <li><strong>La-based</strong> (default): the syllables follow the key signature. A minor song's home note is called <span class="syl">la</span>, and a Dorian song's is <span class="syl">re</span>.</li>
+  <li><strong>Do-based:</strong> home is always <span class="syl">do</span>, and the minor notes get their own names: <span class="syl">me, le, te</span>.</li>
+</ul>
+<p>Both are taught in schools around the world. Switching never resets your progress; it only changes the names on screen.</p>
+
+<h2 id="trouble">14. Troubleshooting</h2>
+<h3>The app can't hear me</h3>
+<ol>
+  <li>Make sure you tapped <strong>Allow</strong> for the microphone. In Chrome, tap the icon at the left of the address bar to check.</li>
+  <li>If the app shows <strong>"Your microphone is sending complete silence"</strong>, it's listening to the wrong input, for example a loop-back channel or a VR headset's microphone. Pick the right one from the list it shows, or in <strong>Settings → Microphone</strong>.</li>
+  <li>On a computer, Chrome can keep its own default microphone. Check it at <code>chrome://settings/content/microphone</code>.</li>
+  <li>Sing a little louder, or move closer to the microphone.</li>
+</ol>
+<h3>I can't hear the tones</h3>
+<ul>
+  <li>Turn the volume up.</li>
+  <li><strong>iPhone:</strong> on older iOS versions, the silent switch mutes the app. Turn silent mode off, or use headphones.</li>
+  <li>Without headphones, nothing plays <em>while you sing</em>, by design. The tones play before your turn.</li>
+</ul>
+<h3>The sound crackles, or the line lags</h3>
+<ul>
+  <li>Close other tabs and apps, and keep the app's tab in front.</li>
+  <li>Try the <strong>Slow</strong> speed.</li>
+  <li>Please report it (see <a href="#testers">For testers</a>), with your phone model and browser.</li>
+</ul>
+<h3>The line jumps around when I'm not singing</h3>
+<p>The microphone is picking up other sounds: talking, music, a TV. Find a quieter spot, or use headphones with a mic. Scattered sounds aren't scored, so they won't hurt your progress.</p>
+
+<h2 id="privacy">15. Privacy</h2>
+<ul>
+  <li>Your voice is analyzed <strong>on your device</strong>, in real time. It isn't recorded, and it isn't sent anywhere.</li>
+  <li>Your progress and settings are saved <strong>in this browser on this device</strong> only. Nothing is shared automatically.</li>
+  <li>Because of that, progress doesn't move between devices or browsers. Clearing the browser's data for this site erases it.</li>
+</ul>
+<p>The full details are on the <a href="../privacy/">privacy page</a>.</p>
+
+<h2 id="testers">16. For testers</h2>
+<div class="card">
+  <p>Thank you for trying an early version. Things that are especially helpful to hear about:</p>
+  <ul>
+    <li>Does the line keep up with your voice?</li>
+    <li>Do the tones sound clean, or crackly?</li>
+    <li>Was any instruction or message confusing?</li>
+    <li>Any melody that sounds wrong?</li>
+    <li>Your device and browser, for example "Pixel 8 Pro, Chrome" or "iPhone 15, Safari".</li>
+  </ul>
+  <p>If the microphone misbehaves, open the app with <code>?diag=1</code> at the end of the address, for example <code>…/?diag=1</code>. The app then reports technical microphone details (level, pitch numbers, the mic's name) to the test server, which helps the team see what went wrong. It never sends your voice.</p>
+</div>
+
+<footer>
+  <p>Solfège Master XR · early test version · <a href="../">Back to the app</a></p>
+</footer>
+
+</div>
+</body>
+</html>
