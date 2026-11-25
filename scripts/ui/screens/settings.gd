@@ -17,6 +17,7 @@ func setup(_args: Dictionary) -> void:
 	var opt := OptionButton.new()
 	opt.custom_minimum_size = Vector2(0, UI.BUTTON_H)
 	opt.add_theme_font_size_override("font_size", 40)
+	opt.get_popup().add_theme_font_size_override("font_size", 40)
 	opt.add_item("La-based (home is la)", MusicKey.MinorSyllables.LA_BASED)
 	opt.add_item("Do-based (home is do)", MusicKey.MinorSyllables.DO_BASED)
 	opt.select(p.minor_syllables)
@@ -26,6 +27,23 @@ func setup(_args: Dictionary) -> void:
 		func(on): _apply(func(): p.chromatic_enabled = on))
 	UI.toggle(syl, "Solfège under the sheet music", p.sheet_syllables,
 		func(on): _apply(func(): p.sheet_syllables = on))
+
+	var snd := UI.card(col)
+	UI.label(snd, "Playback sound", 44)
+	UI.muted(snd, "The voice that plays notes for you, the drone and the chords.", 30)
+	var timbre := OptionButton.new()
+	timbre.custom_minimum_size = Vector2(0, UI.BUTTON_H)
+	timbre.add_theme_font_size_override("font_size", 40)
+	timbre.get_popup().add_theme_font_size_override("font_size", 40)
+	for i in SynthEngine.TIMBRE_NAMES.size():
+		timbre.add_item(SynthEngine.TIMBRE_NAMES[i], i)
+	timbre.select(p.timbre)
+	timbre.item_selected.connect(func(i):
+		_apply(func(): p.timbre = timbre.get_item_id(i))
+		App.synth.engine.timbre = p.timbre as SynthEngine.Timbre
+		_preview())
+	snd.add_child(timbre)
+	UI.button(snd, "Hear it", _preview)
 
 	var mic := UI.card(col)
 	UI.label(mic, "Microphone", 44)
@@ -63,6 +81,16 @@ func _apply(change: Callable) -> void:
 	App.profile.save()
 
 
+## do, mi, sol, do in the middle of the learner's range, in the chosen sound.
+func _preview() -> void:
+	var e := App.synth.engine
+	e.release_all()
+	var tonic := (App.profile.voice_low + App.profile.voice_high) / 2 - 4
+	var at := e.time() + 0.05
+	for i in 4:
+		e.note(tonic + [0, 4, 7, 12][i], at + i * 0.45, 0.42 if i < 3 else 0.9)
+
+
 func _on_reset() -> void:
 	if not _confirm_reset:
 		_confirm_reset = true
@@ -71,5 +99,6 @@ func _on_reset() -> void:
 	var fresh := LearnerProfile.new()
 	fresh.save()
 	App.profile = fresh
+	App.synth.engine.timbre = SynthEngine.Timbre.WARM
 	App.home()
 	App.go("onboarding", {}, false)

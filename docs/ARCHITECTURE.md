@@ -69,6 +69,7 @@ Screens (`scripts/ui/screens/*`) only show state and pass taps along. All the lo
 ## Sound: `scripts/audio/`
 
 - `SynthEngine` decides what plays (notes, glides, drone, cadence, sequences). On desktop it renders in GDScript. On the web it sends each note to `web/synth_worklet.js` through `WebSynthSink` and renders on the browser's audio thread, at about 1% of the GDScript CPU cost. **Keep the two voice implementations in sync.**
+- **Sounds:** `SynthEngine.Timbre` (Warm, Flute, Choir, Soft organ; `LearnerProfile.timbre`, picked in Settings). Each is a list of harmonic strengths (`SynthEngine.partials`, capped at 8 kHz) read from a 1024-sample wave table, with per-sound vibrato, an optional two-voice chorus, flute breath noise and a level trim (`settings`). GDScript works out the harmonics and settings and sends them with every note, so the worklet only builds the table and renders. Noise and start phases come from a per-note seed, so both sides produce the same samples: `node tests/synth_parity.mjs` checks it after a test run. `tools/render_sounds.gd` writes a demo of each sound to `build/sounds/`.
 - `Harmonizer` picks one chord per bar from the melody for the backing track.
 
 ## App shell: `scripts/app.gd`, `scripts/ui/`

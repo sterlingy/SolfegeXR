@@ -3,7 +3,7 @@
 //
 //   start(workletSource)  create the audio context + synth worklet (async; watch .state)
 //   time()                synth clock in seconds (AudioContext.currentTime)
-//   note(json)            schedule a note: {kind, hz, gain, at, dur, attack, release, saw_mix, cutoff}
+//   note(json)            schedule a note (fields: see synth_worklet.js)
 //   stop(kind)            release all voices of a kind
 //   release()             release everything
 //   state                 "idle" | "starting" | "running" | "error"

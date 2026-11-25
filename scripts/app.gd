@@ -35,6 +35,7 @@ func _ready() -> void:
 	profile = LearnerProfile.load_or_new()
 	synth = SynthPlayer.new()
 	add_child(synth)
+	synth.engine.timbre = profile.timbre as SynthEngine.Timbre
 	var text := FileAccess.get_file_as_string("res://songs/catalog.json")
 	var parsed: Variant = JSON.parse_string(text)
 	if parsed is Array:

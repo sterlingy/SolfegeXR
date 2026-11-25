@@ -21,7 +21,7 @@ Teaches adults who believe they can't sing to sing a song in key, using **movabl
 - Toggle 2, chromatic notes: **Off** by default until diatonic skills are solid. Covers only notes outside the key; when off they're sung but labelled "outside the scale."
 - Scoring: cents tolerance (~±50 for beginners, tightening), smooth vibrato, forgive the onset scoop, score by pitch class (octave errors forgiven, separate range hint), distinguish gradual drift from a wrong degree.
 - Every song transposed to the learner's measured range. Tempo control on everything.
-- Reference tone: filtered triangle / light saw with gentle vibrato (not a sine), learner's octave, optional quiet tonic drone.
+- Reference tone: band-limited wave-table voice with gentle vibrato (not a bare sine); the learner picks Warm (default), Flute, Choir (ooh) or Soft organ in Settings. Learner's octave, optional quiet tonic drone.
 
 ## Curriculum
 Core (fixed order): pitch matching → sustained notes → steps → small leaps → large leaps → phrases & songs → minor keys & modes → chromatic (if toggled) → backing track → other voices. Imported songs generate a course = skills needed − skills mastered, with drills built from the song's own material. Mastery thresholds: sensible defaults, tuned later.

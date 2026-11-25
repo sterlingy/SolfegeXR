@@ -88,6 +88,8 @@ Godot_v4.7.2-stable_win64_console.exe --headless --path . -s res://tests/run_tes
 ```
 Add `-- name` to run only tests whose `file:method` contains `name`. Tests live in `tests/test_*.gd` and extend `TestCase`. The exit code is the number of failures.
 
+`node tests/synth_parity.mjs` (after a test run, which writes `build/synth_parity.json`) checks that the web synth (`web/synth_worklet.js`) renders the same samples as `SynthEngine` for every playback sound. Run it after changing either.
+
 `node tests/wasm_parity.mjs` checks that `web/yin.wasm` and the JavaScript fallback give the same pitch and frame count for a set of test tones. Run it after rebuilding the WASM.
 
 ## The pitch detector on the web (WebAssembly)
