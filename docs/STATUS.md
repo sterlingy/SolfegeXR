@@ -6,7 +6,7 @@ Last updated 24 November 2026. The full history is in `git log`.
 
 | Platform | State | Verified on |
 |---|---|---|
-| **Web** (main target) | Working; shared with testers through the tunnel ([HOSTING.md](HOSTING.md)) | Desktop Chrome (mic), Android Chrome (mic), iPad Pro Safari (mic, audio-session fix active) |
+| **Web** (main target) | Working; public at https://sterlingy.github.io/SolfegeXR/ (GitHub Pages, `tools/pages/publish_pages.sh`), test builds through the tunnel ([HOSTING.md](HOSTING.md)) | Desktop Chrome (mic), Android Chrome (mic), iPad Pro Safari (mic, audio-session fix active) |
 | iPhone (Safari) | Should match iPad; silent-switch fix in place | Not yet |
 | Desktop (native Windows) | Native mic plus C++ detector working | This PC: a 220 Hz tone through the speakers detected as 220.1 Hz |
 | Native Android | Detector library built (`bin/libsolfege.android.template_debug.arm64.so`; release build not yet); APK via `tools/android/build_apk.ps1`, run from your own PowerShell | — |
